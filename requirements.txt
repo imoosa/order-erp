@@ -2,3 +2,4 @@ flask
 flask-cors
 gunicorn
 flask_sqlalchemy
+pymysql
