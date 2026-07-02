@@ -1,0 +1,2433 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Maktronic Manufacturing – Order Management System</title>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;500;600;700;800&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+/* ===== DESIGN TOKENS ===== */
+:root {
+  --bg: #0d0f14;
+  --surface: #161a22;
+  --surface2: #1e2330;
+  --border: #2a3040;
+  --border-bright: #3a4560;
+  --text: #e8edf8;
+  --text-muted: #8896b0;
+  --text-dim: #4a5568;
+
+  --accent: #4f8ef7;
+  --accent-glow: rgba(79,142,247,0.18);
+  --accent-dark: #2563eb;
+
+  --success: #22c55e;
+  --success-bg: rgba(34,197,94,0.12);
+  --warning: #f59e0b;
+  --warning-bg: rgba(245,158,11,0.12);
+  --danger: #ef4444;
+  --danger-bg: rgba(239,68,68,0.12);
+  --info: #06b6d4;
+  --info-bg: rgba(6,182,212,0.12);
+  --purple: #a855f7;
+  --purple-bg: rgba(168,85,247,0.12);
+
+  /* Department colors */
+  --sales: #4f8ef7;
+  --accounts: #22c55e;
+  --manufacturing: #f59e0b;
+  --quality: #a855f7;
+  --admin: #06b6d4;
+
+  --radius: 12px;
+  --radius-sm: 8px;
+  --radius-lg: 16px;
+  --shadow: 0 4px 24px rgba(0,0,0,0.4);
+  --shadow-sm: 0 2px 8px rgba(0,0,0,0.3);
+  --sidebar-w: 260px;
+  --transition: all 0.2s cubic-bezier(0.4,0,0.2,1);
+}
+
+* { margin: 0; padding: 0; box-sizing: border-box; }
+
+body {
+  font-family: 'DM Sans', sans-serif;
+  background: var(--bg);
+  color: var(--text);
+  font-size: 14px;
+  line-height: 1.6;
+}
+
+h1,h2,h3,h4 { font-family: 'Syne', sans-serif; font-weight: 700; }
+
+/* ===== SCROLLBAR ===== */
+::-webkit-scrollbar { width: 6px; }
+::-webkit-scrollbar-track { background: var(--surface); }
+::-webkit-scrollbar-thumb { background: var(--border-bright); border-radius: 3px; }
+
+/* ===== LOGIN ===== */
+#login-screen {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 100vh;
+  position: fixed;
+  inset: 0;
+  z-index: 1000;
+  background: var(--bg);
+  overflow: hidden;
+}
+
+.login-bg {
+  position: absolute;
+  inset: 0;
+  background:
+    radial-gradient(ellipse 600px 400px at 20% 50%, rgba(79,142,247,0.08) 0%, transparent 70%),
+    radial-gradient(ellipse 500px 300px at 80% 30%, rgba(168,85,247,0.06) 0%, transparent 70%);
+}
+
+.login-grid {
+  position: absolute;
+  inset: 0;
+  background-image:
+    linear-gradient(rgba(255,255,255,0.02) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(255,255,255,0.02) 1px, transparent 1px);
+  background-size: 40px 40px;
+}
+
+.login-card {
+  position: relative;
+  z-index: 1;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 20px;
+  padding: 44px 48px;
+  width: 100%;
+  max-width: 420px;
+  box-shadow: var(--shadow), 0 0 80px rgba(79,142,247,0.06);
+}
+
+.login-brand {
+  text-align: center;
+  margin-bottom: 36px;
+}
+
+.login-brand .brand-icon {
+  width: 56px;
+  height: 56px;
+  background: linear-gradient(135deg, var(--accent), var(--purple));
+  border-radius: 14px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 24px;
+  margin-bottom: 16px;
+}
+
+.login-brand h1 {
+  font-size: 22px;
+  letter-spacing: -0.5px;
+  color: var(--text);
+}
+
+.login-brand p {
+  color: var(--text-muted);
+  font-size: 13px;
+  margin-top: 4px;
+}
+
+.form-group {
+  margin-bottom: 18px;
+}
+
+.form-group label {
+  display: block;
+  font-size: 12px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  color: var(--text-muted);
+  margin-bottom: 8px;
+}
+
+.form-group input {
+  width: 100%;
+  padding: 11px 16px;
+  background: var(--surface2);
+  border: 1.5px solid var(--border);
+  border-radius: var(--radius-sm);
+  color: var(--text);
+  font-size: 14px;
+  font-family: inherit;
+  transition: var(--transition);
+}
+
+.form-group input:focus {
+  outline: none;
+  border-color: var(--accent);
+  box-shadow: 0 0 0 3px var(--accent-glow);
+}
+
+.demo-accounts {
+  margin-top: 24px;
+  background: var(--surface2);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  padding: 14px 16px;
+  font-size: 12px;
+  color: var(--text-muted);
+}
+
+.demo-accounts strong {
+  display: block;
+  color: var(--text-dim);
+  margin-bottom: 6px;
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.demo-row {
+  display: flex;
+  justify-content: space-between;
+  padding: 3px 0;
+  border-bottom: 1px solid var(--border);
+}
+.demo-row:last-child { border-bottom: none; }
+.demo-dept { color: var(--accent); font-weight: 600; }
+
+/* ===== BUTTONS ===== */
+.btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 16px;
+  border: none;
+  border-radius: var(--radius-sm);
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: var(--transition);
+  font-family: inherit;
+  white-space: nowrap;
+}
+
+.btn-primary {
+  background: var(--accent);
+  color: white;
+}
+.btn-primary:hover { background: var(--accent-dark); transform: translateY(-1px); }
+
+.btn-success { background: var(--success); color: white; }
+.btn-success:hover { background: #16a34a; }
+
+.btn-warning { background: var(--warning); color: #1a1a1a; }
+.btn-warning:hover { background: #d97706; }
+
+.btn-danger { background: var(--danger); color: white; }
+.btn-danger:hover { background: #dc2626; }
+
+.btn-outline {
+  background: transparent;
+  border: 1.5px solid var(--border);
+  color: var(--text-muted);
+}
+.btn-outline:hover { border-color: var(--accent); color: var(--accent); }
+
+.btn-ghost {
+  background: transparent;
+  color: var(--text-muted);
+  padding: 6px 10px;
+}
+.btn-ghost:hover { background: var(--surface2); color: var(--text); }
+
+.btn-full { width: 100%; justify-content: center; padding: 12px; font-size: 14px; }
+
+.btn:disabled { opacity: 0.5; cursor: not-allowed; transform: none; }
+
+/* ===== LAYOUT ===== */
+#app { display: none; min-height: 100vh; }
+
+.sidebar {
+  position: fixed;
+  left: 0; top: 0;
+  width: var(--sidebar-w);
+  height: 100vh;
+  background: var(--surface);
+  border-right: 1px solid var(--border);
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  z-index: 100;
+}
+
+.sidebar-top {
+  padding: 20px 20px 0;
+  flex-shrink: 0;
+}
+
+.sidebar-logo {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 20px;
+  padding-bottom: 20px;
+  border-bottom: 1px solid var(--border);
+}
+
+.logo-icon {
+  width: 36px; height: 36px;
+  background: linear-gradient(135deg, var(--accent), var(--purple));
+  border-radius: 9px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 16px;
+  flex-shrink: 0;
+}
+
+.logo-text h2 {
+  font-size: 14px;
+  font-family: 'Syne', sans-serif;
+  letter-spacing: -0.3px;
+}
+.logo-text p { font-size: 11px; color: var(--text-muted); }
+
+.user-card {
+  background: var(--surface2);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  padding: 12px 14px;
+  margin-bottom: 16px;
+}
+
+.user-card-name {
+  font-weight: 600;
+  font-size: 13px;
+  margin-bottom: 2px;
+}
+
+.user-card-role {
+  font-size: 11px;
+  font-weight: 600;
+  padding: 2px 8px;
+  border-radius: 20px;
+  display: inline-block;
+  margin-top: 4px;
+}
+
+.role-admin { background: var(--info-bg); color: var(--info); }
+.role-sales { background: rgba(79,142,247,0.15); color: var(--sales); }
+.role-accounts { background: var(--success-bg); color: var(--accounts); }
+.role-manufacturing { background: var(--warning-bg); color: var(--manufacturing); }
+.role-quality { background: var(--purple-bg); color: var(--quality); }
+
+.sidebar-nav {
+  flex: 1;
+  padding: 0 12px;
+  overflow-y: auto;
+}
+
+.nav-section-label {
+  font-size: 10px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  color: var(--text-dim);
+  padding: 0 8px;
+  margin: 16px 0 6px;
+}
+
+.nav-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 9px 12px;
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+  transition: var(--transition);
+  color: var(--text-muted);
+  font-size: 13px;
+  font-weight: 500;
+  margin-bottom: 2px;
+  user-select: none;
+}
+
+.nav-item:hover { background: var(--surface2); color: var(--text); }
+.nav-item.active { background: var(--accent-glow); color: var(--accent); border: 1px solid rgba(79,142,247,0.2); }
+.nav-item .nav-icon { width: 18px; text-align: center; font-size: 15px; }
+.nav-item .nav-badge {
+  margin-left: auto;
+  background: var(--danger);
+  color: white;
+  font-size: 10px;
+  font-weight: 700;
+  padding: 1px 6px;
+  border-radius: 10px;
+  min-width: 20px;
+  text-align: center;
+}
+
+.sidebar-bottom {
+  padding: 12px 12px 16px;
+  border-top: 1px solid var(--border);
+  flex-shrink: 0;
+}
+
+/* ===== MAIN CONTENT ===== */
+.main-content {
+  margin-left: var(--sidebar-w);
+  min-height: 100vh;
+  background: var(--bg);
+}
+
+.page-header {
+  padding: 28px 32px 0;
+  margin-bottom: 24px;
+}
+
+.page-header h2 {
+  font-size: 24px;
+  letter-spacing: -0.5px;
+}
+
+.page-header p { color: var(--text-muted); font-size: 13px; margin-top: 4px; }
+
+.page-body { padding: 0 32px 32px; }
+
+.view { display: none; }
+.view.active { display: block; }
+
+/* ===== STAT CARDS ===== */
+.stats-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 16px;
+  margin-bottom: 28px;
+}
+
+.stat-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 20px 22px;
+  cursor: pointer;
+  transition: var(--transition);
+  position: relative;
+  overflow: hidden;
+}
+
+.stat-card::before {
+  content: '';
+  position: absolute;
+  top: 0; left: 0; right: 0;
+  height: 2px;
+  background: var(--card-accent, var(--accent));
+  opacity: 0;
+  transition: var(--transition);
+}
+
+.stat-card:hover { border-color: var(--border-bright); transform: translateY(-2px); box-shadow: var(--shadow-sm); }
+.stat-card:hover::before { opacity: 1; }
+
+.stat-icon {
+  width: 40px; height: 40px;
+  border-radius: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 18px;
+  margin-bottom: 14px;
+}
+
+.stat-label { font-size: 12px; color: var(--text-muted); font-weight: 500; margin-bottom: 4px; }
+.stat-value { font-size: 30px; font-weight: 700; font-family: 'Syne', sans-serif; letter-spacing: -1px; }
+.stat-sub { font-size: 11px; color: var(--text-muted); margin-top: 6px; }
+
+/* ===== TABLES ===== */
+.table-wrap {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  overflow: hidden;
+}
+
+.table-header {
+  padding: 16px 20px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  border-bottom: 1px solid var(--border);
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.table-header h3 { font-size: 15px; }
+
+.table-controls { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
+
+table { width: 100%; border-collapse: collapse; }
+
+th {
+  text-align: left;
+  padding: 11px 16px;
+  background: var(--surface2);
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  color: var(--text-muted);
+  border-bottom: 1px solid var(--border);
+}
+
+td {
+  padding: 13px 16px;
+  border-bottom: 1px solid var(--border);
+  font-size: 13px;
+  color: var(--text);
+}
+
+tr:last-child td { border-bottom: none; }
+tr:hover td { background: rgba(255,255,255,0.02); cursor: pointer; }
+
+/* ===== INPUTS ===== */
+.input, select.input, textarea.input {
+  background: var(--surface2);
+  border: 1.5px solid var(--border);
+  border-radius: var(--radius-sm);
+  color: var(--text);
+  font-size: 13px;
+  font-family: inherit;
+  padding: 9px 12px;
+  transition: var(--transition);
+  width: 100%;
+}
+
+.input:focus { outline: none; border-color: var(--accent); box-shadow: 0 0 0 3px var(--accent-glow); }
+select.input { cursor: pointer; }
+textarea.input { resize: vertical; min-height: 80px; }
+
+.input-sm { padding: 7px 10px; font-size: 12px; }
+
+.search-input {
+  width: 220px;
+  background: var(--surface2);
+  border: 1.5px solid var(--border);
+  border-radius: var(--radius-sm);
+  color: var(--text);
+  font-size: 13px;
+  font-family: inherit;
+  padding: 8px 12px;
+  transition: var(--transition);
+}
+.search-input:focus { outline: none; border-color: var(--accent); }
+
+/* ===== BADGES ===== */
+.badge {
+  display: inline-flex;
+  align-items: center;
+  padding: 3px 10px;
+  border-radius: 20px;
+  font-size: 11px;
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+.badge-blue { background: rgba(79,142,247,0.15); color: #7badff; }
+.badge-green { background: var(--success-bg); color: var(--success); }
+.badge-yellow { background: var(--warning-bg); color: var(--warning); }
+.badge-red { background: var(--danger-bg); color: var(--danger); }
+.badge-purple { background: var(--purple-bg); color: var(--purple); }
+.badge-cyan { background: var(--info-bg); color: var(--info); }
+.badge-gray { background: rgba(255,255,255,0.07); color: var(--text-muted); }
+.badge-orange { background: rgba(234,88,12,0.15); color: #fb923c; }
+
+/* Status → Badge mapping */
+.status-Order-Created { background: rgba(79,142,247,0.15); color: #7badff; }
+.status-Pending-Credit-Check { background: var(--warning-bg); color: var(--warning); }
+.status-Credit-Approved { background: var(--success-bg); color: var(--success); }
+.status-Amount-Pending { background: var(--danger-bg); color: var(--danger); }
+.status-Approved-for-Production { background: var(--purple-bg); color: var(--purple); }
+.status-In-Processing { background: rgba(234,88,12,0.15); color: #fb923c; }
+.status-Manufacturing-Complete { background: var(--success-bg); color: #4ade80; }
+.status-Sent-for-Quality-Check { background: var(--warning-bg); color: var(--warning); }
+.status-Quality-Approved { background: var(--success-bg); color: var(--success); }
+.status-Quality-Check-Failed { background: var(--danger-bg); color: var(--danger); }
+.status-Dispatched { background: var(--info-bg); color: var(--info); }
+.status-Delivered { background: var(--success-bg); color: var(--success); }
+.status-Cancelled { background: rgba(255,255,255,0.06); color: var(--text-muted); }
+
+.priority-urgent { color: var(--danger); font-weight: 700; }
+.priority-high { color: var(--warning); font-weight: 600; }
+.priority-normal { color: var(--text-muted); }
+.priority-low { color: var(--text-dim); }
+
+/* ===== MODAL ===== */
+.modal {
+  display: none;
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.7);
+  z-index: 2000;
+  align-items: center;
+  justify-content: center;
+  backdrop-filter: blur(4px);
+  padding: 16px;
+}
+
+.modal.open { display: flex; animation: fadeIn 0.2s ease; }
+
+@keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+
+.modal-content {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  width: 100%;
+  max-width: 600px;
+  max-height: 90vh;
+  overflow-y: auto;
+  box-shadow: var(--shadow);
+  animation: slideUp 0.2s ease;
+}
+
+.modal-content.modal-lg { max-width: 800px; }
+.modal-content.modal-sm { max-width: 440px; }
+
+@keyframes slideUp { from { transform: translateY(20px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
+
+.modal-header {
+  padding: 20px 24px;
+  border-bottom: 1px solid var(--border);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.modal-header h3 { font-size: 16px; }
+
+.modal-close {
+  background: none;
+  border: none;
+  color: var(--text-muted);
+  font-size: 20px;
+  cursor: pointer;
+  width: 32px; height: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 6px;
+  transition: var(--transition);
+}
+.modal-close:hover { background: var(--surface2); color: var(--text); }
+
+.modal-body { padding: 24px; }
+.modal-footer {
+  padding: 16px 24px;
+  border-top: 1px solid var(--border);
+  display: flex;
+  gap: 10px;
+  justify-content: flex-end;
+}
+
+/* ===== FORM LAYOUTS ===== */
+.form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+.form-grid.cols-3 { grid-template-columns: 1fr 1fr 1fr; }
+.form-full { grid-column: 1 / -1; }
+
+.field { margin-bottom: 14px; }
+.field label {
+  display: block;
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  color: var(--text-muted);
+  margin-bottom: 6px;
+}
+.field-required { color: var(--danger); }
+
+/* ===== ORDER DETAIL ===== */
+.order-detail-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 20px; }
+
+.detail-item {
+  background: var(--surface2);
+  border-radius: var(--radius-sm);
+  padding: 12px 14px;
+}
+
+.detail-label { font-size: 11px; color: var(--text-muted); font-weight: 600; text-transform: uppercase; letter-spacing: 0.4px; margin-bottom: 4px; }
+.detail-value { font-size: 14px; font-weight: 600; }
+
+.payment-summary {
+  background: var(--surface2);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  margin-bottom: 20px;
+}
+
+.payment-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 11px 16px;
+  border-bottom: 1px solid var(--border);
+  font-size: 13px;
+}
+
+.payment-row:last-child { border-bottom: none; }
+.payment-label { color: var(--text-muted); }
+.payment-value { font-weight: 600; }
+.payment-balance { color: var(--danger); font-size: 15px; font-weight: 700; }
+.payment-paid { color: var(--success); }
+
+/* ===== TIMELINE ===== */
+.timeline { position: relative; }
+
+.timeline-item {
+  display: flex;
+  gap: 14px;
+  padding: 12px 0;
+  border-bottom: 1px solid var(--border);
+}
+.timeline-item:last-child { border-bottom: none; }
+
+.timeline-dot {
+  width: 32px; height: 32px;
+  border-radius: 50%;
+  background: var(--surface2);
+  border: 2px solid var(--border);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 12px;
+  flex-shrink: 0;
+  margin-top: 2px;
+}
+
+.timeline-content { flex: 1; min-width: 0; }
+.timeline-status { font-weight: 600; font-size: 13px; margin-bottom: 2px; }
+.timeline-meta { font-size: 11px; color: var(--text-muted); }
+.timeline-note { font-size: 12px; color: var(--text-muted); margin-top: 4px; font-style: italic; }
+
+/* ===== WORKFLOW BOARD ===== */
+.workflow-pipeline {
+  display: flex;
+  gap: 12px;
+  overflow-x: auto;
+  padding-bottom: 12px;
+}
+
+.pipeline-col {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  min-width: 260px;
+  flex-shrink: 0;
+}
+
+.pipeline-header {
+  padding: 14px 16px;
+  border-bottom: 1px solid var(--border);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.pipeline-title { font-size: 13px; font-weight: 700; }
+.pipeline-count {
+  background: var(--surface2);
+  color: var(--text-muted);
+  font-size: 11px;
+  font-weight: 700;
+  padding: 2px 7px;
+  border-radius: 10px;
+}
+
+.pipeline-body { padding: 10px; min-height: 200px; }
+
+.pipeline-card {
+  background: var(--surface2);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  padding: 12px;
+  margin-bottom: 8px;
+  cursor: pointer;
+  transition: var(--transition);
+}
+
+.pipeline-card:hover { border-color: var(--accent); box-shadow: 0 0 0 1px var(--accent); }
+.pipeline-card-id { font-size: 11px; color: var(--text-muted); margin-bottom: 4px; }
+.pipeline-card-client { font-weight: 600; font-size: 13px; margin-bottom: 3px; }
+.pipeline-card-item { font-size: 12px; color: var(--text-muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.pipeline-card-meta { display: flex; justify-content: space-between; align-items: center; margin-top: 8px; }
+
+/* ===== ADMIN PANEL ===== */
+.admin-tabs {
+  display: flex;
+  gap: 4px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  padding: 4px;
+  margin-bottom: 24px;
+  width: fit-content;
+}
+
+.admin-tab {
+  padding: 8px 18px;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text-muted);
+  transition: var(--transition);
+  white-space: nowrap;
+}
+.admin-tab:hover { color: var(--text); }
+.admin-tab.active { background: var(--accent); color: white; }
+
+.admin-tab-content { display: none; }
+.admin-tab-content.active { display: block; }
+
+/* ===== DEPT CARDS ===== */
+.dept-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 14px;
+  margin-bottom: 24px;
+}
+
+.dept-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 18px 20px;
+  transition: var(--transition);
+}
+
+.dept-card:hover { border-color: var(--border-bright); }
+
+.dept-card-top { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 12px; }
+.dept-card-icon { width: 40px; height: 40px; border-radius: 10px; display: flex; align-items: center; justify-content: center; font-size: 18px; }
+.dept-card-actions { display: flex; gap: 4px; }
+.dept-card-name { font-size: 15px; font-weight: 700; margin-bottom: 3px; }
+.dept-card-desc { font-size: 12px; color: var(--text-muted); margin-bottom: 12px; }
+.dept-card-meta { display: flex; gap: 12px; font-size: 12px; color: var(--text-muted); }
+
+/* ===== TOAST ===== */
+.toast-container {
+  position: fixed;
+  bottom: 24px;
+  right: 24px;
+  z-index: 9999;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.toast {
+  padding: 12px 18px;
+  border-radius: var(--radius-sm);
+  font-size: 13px;
+  font-weight: 500;
+  animation: toastIn 0.3s ease;
+  max-width: 340px;
+  box-shadow: var(--shadow);
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+@keyframes toastIn { from { transform: translateX(100%); opacity: 0; } to { transform: translateX(0); opacity: 1; } }
+
+@keyframes rowFadeOut {
+  0%   { opacity: 1; transform: translateX(0); max-height: 80px; }
+  60%  { opacity: 0; transform: translateX(30px); max-height: 80px; }
+  100% { opacity: 0; transform: translateX(30px); max-height: 0; padding: 0; border: none; }
+}
+tr.removing { animation: rowFadeOut 0.4s ease forwards; overflow: hidden; pointer-events: none; }
+
+.toast.success { background: var(--success); color: white; }
+.toast.error { background: var(--danger); color: white; }
+.toast.warning { background: var(--warning); color: #1a1a1a; }
+.toast.info { background: var(--accent); color: white; }
+
+/* ===== EMPTY STATE ===== */
+.empty-state {
+  text-align: center;
+  padding: 60px 24px;
+  color: var(--text-muted);
+}
+.empty-state .empty-icon { font-size: 40px; margin-bottom: 14px; opacity: 0.4; }
+.empty-state p { font-size: 14px; }
+
+/* ===== SECTION HEADER ===== */
+.section-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 16px;
+}
+.section-header h3 { font-size: 16px; }
+
+/* ===== ACTION BUTTONS IN TABLE ===== */
+.action-btns { display: flex; gap: 6px; }
+
+/* ===== LOADING ===== */
+.loading {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 40px;
+  color: var(--text-muted);
+  gap: 10px;
+}
+
+.spinner {
+  width: 20px; height: 20px;
+  border: 2px solid var(--border);
+  border-top-color: var(--accent);
+  border-radius: 50%;
+  animation: spin 0.6s linear infinite;
+}
+@keyframes spin { to { transform: rotate(360deg); } }
+
+/* ===== SEPARATOR ===== */
+.sep { height: 1px; background: var(--border); margin: 20px 0; }
+
+/* ===== MINI INFO ===== */
+.info-box {
+  background: var(--info-bg);
+  border: 1px solid rgba(6,182,212,0.2);
+  border-radius: var(--radius-sm);
+  padding: 12px 14px;
+  font-size: 13px;
+  color: var(--info);
+  margin-bottom: 16px;
+}
+
+.warn-box {
+  background: var(--warning-bg);
+  border: 1px solid rgba(245,158,11,0.2);
+  border-radius: var(--radius-sm);
+  padding: 12px 14px;
+  font-size: 13px;
+  color: var(--warning);
+  margin-bottom: 16px;
+}
+</style>
+</head>
+<body>
+
+<!-- ===== LOGIN ===== -->
+<div id="login-screen">
+  <div class="login-bg"></div>
+  <div class="login-grid"></div>
+  <div class="login-card">
+    <div class="login-brand">
+      <div class="brand-icon">⚙️</div>
+      <h1>Maktronic Manufacturing</h1>
+      <p>Order Management System</p>
+    </div>
+    <div class="form-group">
+      <label>Username</label>
+      <input type="text" id="login-user" placeholder="Enter your username" autocomplete="username">
+    </div>
+    <div class="form-group">
+      <label>Password</label>
+      <input type="password" id="login-pass" placeholder="Enter your password" autocomplete="current-password" onkeydown="if(event.key==='Enter')doLogin()">
+    </div>
+    <button class="btn btn-primary btn-full" onclick="doLogin()">Sign In →</button>
+    <div id="login-error" style="color:var(--danger);font-size:12px;text-align:center;margin-top:10px;display:none;"></div>
+    <div class="demo-accounts">
+      <strong>Demo Credentials</strong>
+      <div class="demo-row"><span class="demo-dept">Admin</span><span>admin / admin123</span></div>
+      <div class="demo-row"><span class="demo-dept">Sales</span><span>sales_user / sales123</span></div>
+      <div class="demo-row"><span class="demo-dept">Accounts</span><span>accounts_user / accounts123</span></div>
+      <div class="demo-row"><span class="demo-dept">Manufacturing</span><span>manufacturing_user / manufacturing123</span></div>
+      <div class="demo-row"><span class="demo-dept">Quality</span><span>quality_user / quality123</span></div>
+    </div>
+  </div>
+</div>
+
+<!-- ===== MAIN APP ===== -->
+<div id="app">
+  <!-- Sidebar -->
+  <div class="sidebar">
+    <div class="sidebar-top">
+      <div class="sidebar-logo">
+        <div class="logo-icon">⚙️</div>
+        <div class="logo-text">
+          <h2>Maktronic OMS</h2>
+          <p id="sidebar-company">Loading...</p>
+        </div>
+      </div>
+      <div class="user-card">
+        <div class="user-card-name" id="sidebar-username">—</div>
+        <div style="font-size:11px;color:var(--text-muted)" id="sidebar-dept">—</div>
+        <div class="user-card-role" id="sidebar-role-badge">—</div>
+      </div>
+    </div>
+
+    <div class="sidebar-nav">
+      <div class="nav-section-label">Navigation</div>
+      <div class="nav-item active" data-view="dashboard" onclick="switchView('dashboard')">
+        <span class="nav-icon">📊</span> Dashboard
+      </div>
+      <div class="nav-item" data-view="orders" onclick="switchView('orders')">
+        <span class="nav-icon">📋</span> Orders
+        <span class="nav-badge" id="badge-orders" style="display:none">0</span>
+      </div>
+      <div class="nav-item" data-view="workflow" onclick="switchView('workflow')">
+        <span class="nav-icon">🔄</span> Workflow Board
+      </div>
+
+      <!-- Admin only -->
+      <div id="nav-admin-section" style="display:none">
+        <div class="nav-section-label">Administration</div>
+        <div class="nav-item" data-view="admin" onclick="switchView('admin')">
+          <span class="nav-icon">⚙️</span> Admin Panel
+        </div>
+      </div>
+    </div>
+
+    <div class="sidebar-bottom">
+      <div class="nav-item" onclick="doLogout()" style="color:var(--danger);">
+        <span class="nav-icon">🚪</span> Logout
+      </div>
+    </div>
+  </div>
+
+  <!-- Main Content -->
+  <div class="main-content">
+
+    <!-- ===== DASHBOARD VIEW ===== -->
+    <div id="view-dashboard" class="view active">
+      <div class="page-header">
+        <h2 id="dash-title">Dashboard</h2>
+        <p id="dash-subtitle">Welcome back</p>
+      </div>
+      <div class="page-body">
+        <div id="stats-grid" class="stats-grid"></div>
+        <div class="section-header">
+          <h3>Recent Activity</h3>
+          <div id="dash-action"></div>
+        </div>
+        <div id="recent-orders-table"></div>
+      </div>
+    </div>
+
+    <!-- ===== ORDERS VIEW ===== -->
+    <div id="view-orders" class="view">
+      <div class="page-header">
+        <h2>Orders</h2>
+        <p id="orders-subtitle">Manage and track all orders</p>
+      </div>
+      <div class="page-body">
+        <div class="table-wrap">
+          <div class="table-header">
+            <h3 id="orders-count">All Orders</h3>
+            <div class="table-controls">
+              <input type="text" class="search-input" id="search-input" placeholder="🔍 Search..." oninput="loadOrders()">
+              <select class="input input-sm" id="status-filter" onchange="loadOrders()" style="width:auto">
+                <option value="">All Statuses</option>
+              </select>
+              <select class="input input-sm" id="priority-filter" onchange="loadOrders()" style="width:auto">
+                <option value="">All Priority</option>
+                <option value="urgent">🔴 Urgent</option>
+                <option value="high">🟡 High</option>
+                <option value="normal">⚪ Normal</option>
+                <option value="low">⬇️ Low</option>
+              </select>
+              <a href="/new-order" class="btn btn-primary" id="btn-new-order" style="display:none">+ New Order</a>
+            </div>
+          </div>
+          <div id="orders-table-body"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ===== WORKFLOW VIEW ===== -->
+    <div id="view-workflow" class="view">
+      <div class="page-header">
+        <h2>Workflow Board</h2>
+        <p>Visual pipeline of all order stages</p>
+      </div>
+      <div class="page-body">
+        <div id="workflow-board" class="workflow-pipeline"></div>
+      </div>
+    </div>
+
+    <!-- ===== ADMIN VIEW ===== -->
+    <div id="view-admin" class="view">
+      <div class="page-header">
+        <h2>Admin Panel</h2>
+        <p>Manage company, departments and users</p>
+      </div>
+      <div class="page-body">
+        <div class="admin-tabs">
+          <div class="admin-tab active" onclick="switchAdminTab('departments')">🏢 Departments</div>
+          <div class="admin-tab" onclick="switchAdminTab('users')">👥 Users</div>
+          <div class="admin-tab" onclick="switchAdminTab('company')">🏭 Company</div>
+        </div>
+
+        <!-- Departments Tab -->
+        <div id="admin-tab-departments" class="admin-tab-content active">
+          <div class="section-header">
+            <h3>Departments</h3>
+            <button class="btn btn-primary" onclick="openModal('dept-modal')">+ Add Department</button>
+          </div>
+          <div id="dept-grid" class="dept-grid"></div>
+        </div>
+
+        <!-- Users Tab -->
+        <div id="admin-tab-users" class="admin-tab-content">
+          <div class="section-header">
+            <h3>Users & Access</h3>
+            <button class="btn btn-primary" onclick="openUserModal()">+ Add User</button>
+          </div>
+          <div class="table-wrap">
+            <div id="users-table"></div>
+          </div>
+        </div>
+
+        <!-- Company Tab -->
+        <div id="admin-tab-company" class="admin-tab-content">
+          <div id="company-form-wrap"></div>
+        </div>
+      </div>
+    </div>
+
+  </div><!-- end main-content -->
+</div><!-- end app -->
+
+<!-- ===== MODALS ===== -->
+
+<!-- Create Order Modal -->
+<div id="create-modal" class="modal">
+  <div class="modal-content">
+    <div class="modal-header">
+      <h3>📦 Create New Order</h3>
+      <button class="modal-close" onclick="closeModal('create-modal')">×</button>
+    </div>
+    <div class="modal-body">
+      <div class="form-grid">
+        <div class="field">
+          <label>Client Name <span class="field-required">*</span></label>
+          <input type="text" class="input" id="o-client-name" placeholder="Full name">
+        </div>
+        <div class="field">
+          <label>Phone</label>
+          <input type="text" class="input" id="o-phone" placeholder="+91-...">
+        </div>
+        <div class="field">
+          <label>Email</label>
+          <input type="email" class="input" id="o-email" placeholder="client@email.com">
+        </div>
+        <div class="field">
+          <label>Priority</label>
+          <select class="input" id="o-priority">
+            <option value="normal">Normal</option>
+            <option value="high">High</option>
+            <option value="urgent">Urgent</option>
+            <option value="low">Low</option>
+          </select>
+        </div>
+        <div class="field form-full">
+          <label>Item Description <span class="field-required">*</span></label>
+          <input type="text" class="input" id="o-item" placeholder="Product / service description">
+        </div>
+        <div class="field">
+          <label>Quantity</label>
+          <input type="number" class="input" id="o-qty" value="1" min="1">
+        </div>
+        <div class="field">
+          <label>Unit Price (₹)</label>
+          <input type="number" class="input" id="o-unit-price" value="0" min="0" oninput="calcOrderTotal()">
+        </div>
+        <div class="field form-full">
+          <label>Total Amount Due (₹)</label>
+          <input type="number" class="input" id="o-amount" value="0" min="0">
+          <p style="font-size:11px;color:var(--text-muted);margin-top:4px">Auto-calculated from qty × unit price, or enter manually</p>
+        </div>
+        <div class="field form-full">
+          <label>Notes</label>
+          <textarea class="input" id="o-notes" placeholder="Any special requirements..."></textarea>
+        </div>
+        <div class="field form-full" style="border-top:1px solid var(--border);padding-top:14px;margin-top:4px">
+          <label>Order Taken By <span class="field-required">*</span></label>
+          <input type="text" class="input" id="o-taken-by" placeholder="Name of the sales person handling this order">
+          <p style="font-size:11px;color:var(--text-muted);margin-top:4px">The team member responsible for this order</p>
+        </div>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-outline" onclick="closeModal('create-modal')">Cancel</button>
+      <button class="btn btn-primary" onclick="submitOrder()">Create Order</button>
+    </div>
+  </div>
+</div>
+
+<!-- Order Detail Modal -->
+<div id="detail-modal" class="modal">
+  <div class="modal-content modal-lg">
+    <div class="modal-header">
+      <div>
+        <h3 id="detail-order-id">Order Details</h3>
+        <div id="detail-status-badge" style="margin-top:6px"></div>
+      </div>
+      <button class="modal-close" onclick="closeModal('detail-modal')">×</button>
+    </div>
+    <div class="modal-body">
+      <div class="order-detail-grid" id="detail-info"></div>
+      <div class="payment-summary" id="detail-payment"></div>
+      <div id="detail-actions"></div>
+      <div class="sep"></div>
+      <h4 style="margin-bottom:14px;font-size:14px">Order Timeline</h4>
+      <div class="timeline" id="detail-timeline"></div>
+    </div>
+    <div class="modal-footer" id="detail-footer"></div>
+  </div>
+</div>
+
+<!-- Status Update Modal -->
+<div id="status-modal" class="modal">
+  <div class="modal-content modal-sm">
+    <div class="modal-header">
+      <h3 id="status-modal-title">Update Status</h3>
+      <button class="modal-close" onclick="closeModal('status-modal')">×</button>
+    </div>
+    <div class="modal-body">
+      <div class="field">
+        <label>New Status</label>
+        <select class="input" id="status-select"></select>
+      </div>
+      <div class="field">
+        <label>Note / Remark</label>
+        <textarea class="input" id="status-note" placeholder="Add a note about this update..."></textarea>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-outline" onclick="closeModal('status-modal')">Cancel</button>
+      <button class="btn btn-primary" onclick="submitStatusUpdate()">Update Status</button>
+    </div>
+  </div>
+</div>
+
+<!-- Accounts Credit Check Modal -->
+<div id="accounts-modal" class="modal">
+  <div class="modal-content modal-sm">
+    <div class="modal-header">
+      <h3 id="acc-modal-title">💳 Credit Check</h3>
+      <button class="modal-close" onclick="closeModal('accounts-modal')">×</button>
+    </div>
+    <div class="modal-body">
+      <div class="info-box" id="acc-order-info"></div>
+      <div id="acc-amount-pending-notice" style="display:none" class="warn-box">
+        ⚠️ This order has an outstanding balance. You can record an additional payment below and update the credit status.
+      </div>
+      <div class="payment-summary">
+        <div class="payment-row"><span class="payment-label">Amount Due</span><span class="payment-value" id="acc-amount-due">—</span></div>
+        <div class="payment-row"><span class="payment-label">Amount Paid</span><span class="payment-value payment-paid" id="acc-amount-paid">—</span></div>
+        <div class="payment-row"><span class="payment-label">Balance Remaining</span><span class="payment-value payment-balance" id="acc-balance">—</span></div>
+      </div>
+      <div class="field">
+        <label id="acc-payment-label">Payment Received Now (₹)</label>
+        <input type="number" class="input" id="acc-payment" value="0" min="0" oninput="accSuggestDecision()">
+        <p style="font-size:11px;color:var(--text-muted);margin-top:4px" id="acc-payment-hint">Enter 0 if no payment received at this time</p>
+      </div>
+      <div class="field">
+        <label>Credit Decision <span class="field-required">*</span></label>
+        <select class="input" id="acc-decision">
+          <option value="">— Select Decision —</option>
+          <option value="approved">✅ Approve — Full payment / Creditworthy</option>
+          <option value="pending">⏳ Amount Pending — Partial / Follow-up needed</option>
+        </select>
+        <p style="font-size:11px;color:var(--text-muted);margin-top:4px" id="acc-decision-hint"></p>
+      </div>
+      <div class="field" style="border-top:1px solid var(--border);padding-top:14px;margin-top:2px">
+        <label>Approved / Processed By <span class="field-required">*</span></label>
+        <input type="text" class="input" id="acc-approved-by" placeholder="Name of the accounts person processing this">
+        <p style="font-size:11px;color:var(--text-muted);margin-top:4px">Required — name of person making this decision</p>
+      </div>
+      <div class="form-grid" id="acc-payment-fields">
+        <div class="field">
+          <label>Mode of Payment</label>
+          <select class="input" id="acc-payment-mode">
+            <option value="">— Select Mode —</option>
+            <option value="Cash">💵 Cash</option>
+            <option value="NEFT">🏦 NEFT</option>
+            <option value="RTGS">🏦 RTGS</option>
+            <option value="IMPS">📲 IMPS</option>
+            <option value="UPI">📱 UPI</option>
+            <option value="Cheque">📝 Cheque</option>
+            <option value="DD">📄 Demand Draft</option>
+            <option value="Card">💳 Card</option>
+            <option value="Other">Other</option>
+          </select>
+        </div>
+        <div class="field">
+          <label>Payment Reference / Transaction ID</label>
+          <input type="text" class="input" id="acc-payment-ref" placeholder="Txn ID / Cheque No. / UTR...">
+        </div>
+      </div>
+      <div class="field">
+        <label>Note / Remarks</label>
+        <textarea class="input" id="acc-note" placeholder="Add any remarks about this decision..."></textarea>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-outline" onclick="closeModal('accounts-modal')">Cancel</button>
+      <button class="btn btn-success" id="acc-submit-btn" onclick="processCreditCheck()">Submit Decision</button>
+    </div>
+  </div>
+</div>
+
+<!-- Add Department Modal -->
+<div id="dept-modal" class="modal">
+  <div class="modal-content modal-sm">
+    <div class="modal-header">
+      <h3>🏢 Add Department</h3>
+      <button class="modal-close" onclick="closeModal('dept-modal')">×</button>
+    </div>
+    <div class="modal-body">
+      <div class="field">
+        <label>Department Name <span class="field-required">*</span></label>
+        <input type="text" class="input" id="dept-name" placeholder="e.g. Sales Department">
+      </div>
+      <div class="field">
+        <label>Role Type <span class="field-required">*</span></label>
+        <select class="input" id="dept-role">
+          <option value="">— Select Role —</option>
+          <option value="sales_department">Sales Department</option>
+          <option value="accounts_department">Accounts Department</option>
+          <option value="partner_manufacturing">Partner / Manufacturing</option>
+          <option value="quality_department">Quality Department</option>
+        </select>
+      </div>
+      <div class="field">
+        <label>Description</label>
+        <textarea class="input" id="dept-desc" placeholder="Brief description of this department..."></textarea>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-outline" onclick="closeModal('dept-modal')">Cancel</button>
+      <button class="btn btn-primary" onclick="addDepartment()">Add Department</button>
+    </div>
+  </div>
+</div>
+
+<!-- Add User Modal -->
+<div id="user-modal" class="modal">
+  <div class="modal-content">
+    <div class="modal-header">
+      <h3>👤 Add User</h3>
+      <button class="modal-close" onclick="closeModal('user-modal')">×</button>
+    </div>
+    <div class="modal-body">
+      <div class="form-grid">
+        <div class="field">
+          <label>Full Name <span class="field-required">*</span></label>
+          <input type="text" class="input" id="u-fullname" placeholder="Full name">
+        </div>
+        <div class="field">
+          <label>Username <span class="field-required">*</span></label>
+          <input type="text" class="input" id="u-username" placeholder="login_name">
+        </div>
+        <div class="field">
+          <label>Password <span class="field-required">*</span></label>
+          <input type="password" class="input" id="u-password" placeholder="Set password">
+        </div>
+        <div class="field">
+          <label>Email</label>
+          <input type="email" class="input" id="u-email" placeholder="email@company.com">
+        </div>
+        <div class="field">
+          <label>Phone</label>
+          <input type="text" class="input" id="u-phone" placeholder="+91-...">
+        </div>
+        <div class="field">
+          <label>Department</label>
+          <select class="input" id="u-department">
+            <option value="">None (Admin)</option>
+          </select>
+        </div>
+        <div class="field">
+          <label>Role <span class="field-required">*</span></label>
+          <select class="input" id="u-role">
+            <option value="admin">Admin</option>
+            <option value="sales_department">Sales Department</option>
+            <option value="accounts_department">Accounts Department</option>
+            <option value="partner_manufacturing">Partner / Manufacturing</option>
+            <option value="quality_department">Quality Department</option>
+          </select>
+        </div>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-outline" onclick="closeModal('user-modal')">Cancel</button>
+      <button class="btn btn-primary" onclick="addUser()">Add User</button>
+    </div>
+  </div>
+</div>
+
+<!-- Toast Container -->
+<div class="toast-container" id="toast-container"></div>
+
+<script>
+/* ============================================================
+   MAKTRONIC OMS — FRONTEND CONTROLLER
+   ============================================================ */
+
+let currentUser = null;
+let allStatuses = [];
+let visibleStatuses = [];
+let roleTransitions = {};
+let currentOrderId = null;
+let currentOrderData = null;
+
+/* ===== AUTH ===== */
+async function checkAuth() {
+  try {
+    const r = await api('GET', '/api/check-auth');
+    if (r.authenticated) {
+      currentUser = r.user;
+      initApp();
+    }
+  } catch(e) {}
+}
+
+async function doLogin() {
+  const username = document.getElementById('login-user').value.trim();
+  const password = document.getElementById('login-pass').value;
+  const errEl = document.getElementById('login-error');
+  errEl.style.display = 'none';
+
+  if (!username || !password) {
+    errEl.textContent = 'Please enter username and password.';
+    errEl.style.display = 'block';
+    return;
+  }
+
+  try {
+    const r = await api('POST', '/api/login', { username, password });
+    if (r.success) {
+      currentUser = r.user;
+      initApp();
+    } else {
+      errEl.textContent = r.error || 'Invalid credentials.';
+      errEl.style.display = 'block';
+    }
+  } catch(e) {
+    errEl.textContent = 'Connection error. Make sure the server is running.';
+    errEl.style.display = 'block';
+  }
+}
+
+async function doLogout() {
+  await api('POST', '/api/logout');
+  location.reload();
+}
+
+/* ===== INIT ===== */
+async function initApp() {
+  document.getElementById('login-screen').style.display = 'none';
+  document.getElementById('app').style.display = 'block';
+
+  // Fetch status config
+  try {
+    const r = await api('GET', '/api/statuses');
+    allStatuses = r.all || [];
+    visibleStatuses = r.visible || [];
+    roleTransitions = r.transitions || {};
+  } catch(e) {}
+
+  setupSidebar();
+  populateFilters();
+  await loadDashboard();
+}
+
+function setupSidebar() {
+  const u = currentUser;
+  document.getElementById('sidebar-company').textContent = u.company_name || 'Maktronic';
+  document.getElementById('sidebar-username').textContent = u.full_name;
+  document.getElementById('sidebar-dept').textContent = u.department_name || 'Administration';
+
+  const roleLabels = {
+    admin: 'Admin', sales_department: 'Sales', accounts_department: 'Accounts',
+    partner_manufacturing: 'Manufacturing', quality_department: 'Quality'
+  };
+  const roleClasses = {
+    admin: 'role-admin', sales_department: 'role-sales', accounts_department: 'role-accounts',
+    partner_manufacturing: 'role-manufacturing', quality_department: 'role-quality'
+  };
+
+  const badge = document.getElementById('sidebar-role-badge');
+  badge.textContent = roleLabels[u.role] || u.role;
+  badge.className = 'user-card-role ' + (roleClasses[u.role] || '');
+
+  // Show admin section if admin
+  if (u.role === 'admin') {
+    document.getElementById('nav-admin-section').style.display = 'block';
+  }
+
+  // Show new order button for sales/admin
+  if (['admin', 'sales_department'].includes(u.role)) {
+    document.getElementById('btn-new-order').style.display = 'inline-flex';
+    document.getElementById('dash-action').innerHTML = `<a href="/new-order" class="btn btn-primary">+ New Order</a>`;
+  }
+}
+
+function populateFilters() {
+  const sf = document.getElementById('status-filter');
+  sf.innerHTML = '<option value="">All Statuses</option>';
+  visibleStatuses.forEach(s => {
+    const o = document.createElement('option');
+    o.value = s; o.textContent = s;
+    sf.appendChild(o);
+  });
+}
+
+/* ===== VIEW SWITCH ===== */
+function switchView(view) {
+  document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
+  document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+
+  document.getElementById('view-' + view).classList.add('active');
+  document.querySelector(`[data-view="${view}"]`)?.classList.add('active');
+
+  if (view === 'dashboard') loadDashboard();
+  else if (view === 'orders') loadOrders();
+  else if (view === 'workflow') loadWorkflow();
+  else if (view === 'admin') loadAdminPanel();
+}
+
+/* ===== DASHBOARD ===== */
+async function loadDashboard() {
+  const roleNames = {
+    admin: 'Admin Dashboard', sales_department: 'Sales Dashboard',
+    accounts_department: 'Accounts Dashboard', partner_manufacturing: 'Manufacturing Dashboard',
+    quality_department: 'Quality Dashboard'
+  };
+  document.getElementById('dash-title').textContent = roleNames[currentUser.role] || 'Dashboard';
+  document.getElementById('dash-subtitle').textContent = `Welcome back, ${currentUser.full_name}`;
+
+  try {
+    const stats = await api('GET', `/api/stats?company_id=${currentUser.company_id}`);
+    renderStats(stats);
+
+    const orders = await api('GET', `/api/orders?company_id=${currentUser.company_id}`);
+    renderOrdersTable(orders.slice(0, 10), 'recent-orders-table');
+
+  } catch(e) {
+    console.error(e);
+    showToast('Error loading dashboard', 'error');
+  }
+}
+
+function renderStats(stats) {
+  const role = currentUser.role;
+  const grid = document.getElementById('stats-grid');
+  const cards = [];
+
+  if (role === 'admin') {
+    cards.push(
+      mkStat('📦', 'Total Orders', stats.total_orders || 0, '', 'var(--accent)', '#1e2a40'),
+      mkStat('💰', 'Total Revenue', '₹' + fmt(stats.total_revenue), '', 'var(--success)', '#1a2e22'),
+      mkStat('✅', 'Amount Collected', '₹' + fmt(stats.total_paid), '', 'var(--success)', '#1a2e22'),
+      mkStat('⏳', 'Outstanding', '₹' + fmt(stats.outstanding), '', 'var(--danger)', '#2e1a1a'),
+      mkStat('🏢', 'Departments', stats.dept_count || 0, '', 'var(--purple)', '#1e1a2e'),
+      mkStat('👥', 'Users', stats.user_count || 0, '', 'var(--info)', '#1a2630')
+    );
+  } else if (role === 'sales_department') {
+    cards.push(
+      mkStat('📦', 'Total Orders', stats.total_orders || 0, '', 'var(--sales)', '#1a2040'),
+      mkStat('🆕', 'New Orders', stats.new_orders || 0, 'Awaiting credit check', 'var(--warning)', '#2e2614'),
+      mkStat('✅', 'Quality Approved', stats.quality_approved || 0, 'Ready to dispatch', 'var(--success)', '#1a2e22'),
+      mkStat('🚚', 'Dispatched', stats.dispatched || 0, '', 'var(--info)', '#1a2630')
+    );
+  } else if (role === 'accounts_department') {
+    cards.push(
+      mkStat('🔍', 'Pending Credit Check', stats.pending_credit_check || 0, 'Needs review', 'var(--warning)', '#2e2614'),
+      mkStat('⚠️', 'Amount Pending', stats.amount_pending_count || 0, 'Orders', 'var(--danger)', '#2e1a1a'),
+      mkStat('💸', 'Total Pending (₹)', '₹' + fmt(stats.total_pending_amount), 'Balance owed', 'var(--danger)', '#2e1a1a'),
+      mkStat('✅', 'Credit Approved', stats.credit_approved || 0, '', 'var(--success)', '#1a2e22'),
+      mkStat('💰', 'Total Collected', '₹' + fmt(stats.total_collected), '', 'var(--success)', '#1a2e22')
+    );
+  } else if (role === 'partner_manufacturing') {
+    cards.push(
+      mkStat('📥', 'Approved for Prod.', stats.approved_for_production || 0, 'Awaiting start', 'var(--warning)', '#2e2614'),
+      mkStat('⚙️', 'In Processing', stats.in_processing || 0, 'Active production', 'var(--manufacturing)', '#2e2614'),
+      mkStat('✅', 'Mfg Complete', stats.manufacturing_complete || 0, 'Awaiting QC', 'var(--success)', '#1a2e22'),
+      mkStat('🔬', 'In Quality Check', stats.in_quality_check || 0, 'Sent for QC', 'var(--info)', '#1a2630'),
+      mkStat('❌', 'QC Failed', stats.quality_check_failed || 0, 'Back to production', 'var(--danger)', '#2e1a1a')
+    );
+  } else if (role === 'quality_department') {
+    cards.push(
+      mkStat('🔬', 'Pending QC', stats.pending_quality_check || 0, 'Awaiting inspection', 'var(--warning)', '#2e2614'),
+      mkStat('✅', 'Quality Approved', stats.quality_approved || 0, '', 'var(--success)', '#1a2e22'),
+      mkStat('❌', 'QC Failed', stats.quality_failed || 0, 'Sent back', 'var(--danger)', '#2e1a1a')
+    );
+  }
+
+  grid.innerHTML = cards.join('');
+}
+
+function mkStat(icon, label, value, sub, color, bg) {
+  return `
+    <div class="stat-card" style="--card-accent:${color}">
+      <div class="stat-icon" style="background:${bg};color:${color}">${icon}</div>
+      <div class="stat-label">${label}</div>
+      <div class="stat-value" style="color:${color}">${value}</div>
+      ${sub ? `<div class="stat-sub">${sub}</div>` : ''}
+    </div>`;
+}
+
+function fmt(n) {
+  if (!n) return '0';
+  return parseFloat(n).toLocaleString('en-IN', { maximumFractionDigits: 2 });
+}
+
+/* ===== ORDERS TABLE ===== */
+async function loadOrders() {
+  const search = document.getElementById('search-input')?.value || '';
+  const status = document.getElementById('status-filter')?.value || '';
+  const priority = document.getElementById('priority-filter')?.value || '';
+
+  let url = `/api/orders?company_id=${currentUser.company_id}`;
+  if (search) url += `&search=${encodeURIComponent(search)}`;
+  if (status) url += `&status=${encodeURIComponent(status)}`;
+  if (priority) url += `&priority=${encodeURIComponent(priority)}`;
+
+  try {
+    const orders = await api('GET', url);
+    document.getElementById('orders-count').textContent = `All Orders (${orders.length})`;
+    renderOrdersTable(orders, 'orders-table-body');
+  } catch(e) {
+    document.getElementById('orders-table-body').innerHTML = '<div class="loading">Error loading orders</div>';
+  }
+}
+
+function renderOrdersTable(orders, containerId) {
+  const el = document.getElementById(containerId);
+  if (!orders || orders.length === 0) {
+    el.innerHTML = `<div class="empty-state"><div class="empty-icon">📭</div><p>No orders found</p></div>`;
+    return;
+  }
+
+  const role = currentUser.role;
+  const showAmount = ['admin', 'accounts_department', 'sales_department'].includes(role);
+
+  el.innerHTML = `
+    <table>
+      <thead><tr>
+        <th>Order ID</th>
+        <th>Client</th>
+        <th>Item</th>
+        <th>Priority</th>
+        ${showAmount ? '<th>Amount</th>' : ''}
+        <th>Taken By</th>
+        <th>Approved By</th>
+        <th>Status</th>
+        <th>Date</th>
+        <th>Action</th>
+      </tr></thead>
+      <tbody>
+        ${orders.map(o => `
+          <tr data-order-id="${o.id}" onclick="openOrderDetail('${o.id}')">
+            <td><code style="font-size:12px;color:var(--accent)">${esc(o.id)}</code></td>
+            <td><strong>${esc(o.client_name)}</strong><br><span style="font-size:11px;color:var(--text-muted)">${esc(o.client_phone||'')}</span></td>
+            <td style="max-width:180px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${esc(o.item_description)}</td>
+            <td><span class="priority-${o.priority}">${priorityIcon(o.priority)}</span></td>
+            ${showAmount ? `<td>
+              <div style="font-weight:600">₹${fmt(o.amount_due)}</div>
+              <div style="font-size:11px;color:${o.balance > 0 ? 'var(--danger)' : 'var(--success)'}">
+                ${o.balance > 0 ? `⚠ ₹${fmt(o.balance)} due` : '✓ Paid'}
+              </div>
+            </td>` : ''}
+            <td style="font-size:12px">${o.taken_by ? `<span style="color:var(--accent);font-weight:600">🧑‍💼 ${esc(o.taken_by)}</span>` : '<span style="color:var(--text-dim)">—</span>'}</td>
+            <td style="font-size:12px">${o.approved_by ? `<span style="color:var(--success);font-weight:600">✅ ${esc(o.approved_by)}</span>` : '<span style="color:var(--text-dim)">—</span>'}</td>
+            <td><span class="badge ${statusClass(o.status)}">${esc(o.status)}</span></td>
+            <td style="font-size:12px;color:var(--text-muted)">${fmtDate(o.created_at)}</td>
+            <td><button class="btn btn-ghost btn-sm" onclick="event.stopPropagation();openOrderDetail('${o.id}')">View →</button></td>
+          </tr>
+        `).join('')}
+      </tbody>
+    </table>`;
+}
+
+function priorityIcon(p) {
+  return { urgent: '🔴 Urgent', high: '🟡 High', normal: '⚪ Normal', low: '⬇️ Low' }[p] || p;
+}
+
+/* ===== ORDER DETAIL ===== */
+async function openOrderDetail(orderId) {
+  currentOrderId = orderId;
+  try {
+    const r = await api('GET', `/api/orders/${orderId}`);
+    currentOrderData = r.order;
+    renderOrderDetail(r.order, r.history);
+    openModal('detail-modal');
+  } catch(e) {
+    showToast('Error loading order', 'error');
+  }
+}
+
+function renderOrderDetail(o, history) {
+  document.getElementById('detail-order-id').textContent = o.id;
+  document.getElementById('detail-status-badge').innerHTML = `<span class="badge ${statusClass(o.status)}">${esc(o.status)}</span>`;
+
+  document.getElementById('detail-info').innerHTML = `
+    <div class="detail-item"><div class="detail-label">Client</div><div class="detail-value">${esc(o.client_name)}</div></div>
+    <div class="detail-item"><div class="detail-label">Phone</div><div class="detail-value">${esc(o.client_phone||'—')}</div></div>
+    <div class="detail-item"><div class="detail-label">Email</div><div class="detail-value">${esc(o.client_email||'—')}</div></div>
+    <div class="detail-item"><div class="detail-label">Priority</div><div class="detail-value">${priorityIcon(o.priority)}</div></div>
+    <div class="detail-item"><div class="detail-label">Item</div><div class="detail-value">${esc(o.item_description)}</div></div>
+    <div class="detail-item"><div class="detail-label">Quantity</div><div class="detail-value">${o.quantity}</div></div>
+    <div class="detail-item"><div class="detail-label">Created By</div><div class="detail-value">${esc(o.created_by)}</div></div>
+    <div class="detail-item"><div class="detail-label">Date</div><div class="detail-value">${fmtDate(o.created_at)}</div></div>
+    ${o.taken_by ? `<div class="detail-item" style="background:rgba(79,142,247,0.08);border:1px solid rgba(79,142,247,0.2)"><div class="detail-label">🧑‍💼 Order Taken By</div><div class="detail-value" style="color:var(--accent)">${esc(o.taken_by)}</div></div>` : ''}
+    ${o.approved_by ? `<div class="detail-item" style="background:rgba(34,197,94,0.08);border:1px solid rgba(34,197,94,0.2)"><div class="detail-label">✅ Credit Approved By</div><div class="detail-value" style="color:var(--success)">${esc(o.approved_by)}</div></div>` : ''}
+    ${o.notes ? `<div class="detail-item" style="grid-column:1/-1"><div class="detail-label">Notes</div><div class="detail-value">${esc(o.notes)}</div></div>` : ''}
+  `;
+
+  const role = currentUser.role;
+  const showPayment = ['admin', 'accounts_department', 'sales_department'].includes(role);
+  if (showPayment) {
+    document.getElementById('detail-payment').innerHTML = `
+      <div class="payment-row"><span class="payment-label">Total Due</span><span class="payment-value">₹${fmt(o.amount_due)}</span></div>
+      <div class="payment-row"><span class="payment-label">Amount Paid</span><span class="payment-value payment-paid">₹${fmt(o.amount_paid)}</span></div>
+      <div class="payment-row"><span class="payment-label">Balance</span><span class="payment-value ${o.balance > 0 ? 'payment-balance' : 'payment-paid'}">₹${fmt(o.balance)} ${o.balance <= 0 ? '✓ Paid' : '⚠ Pending'}</span></div>
+    `;
+  } else {
+    document.getElementById('detail-payment').innerHTML = '';
+  }
+
+  // Action buttons
+  const actions = getOrderActions(o);
+  document.getElementById('detail-actions').innerHTML = actions.length
+    ? `<div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:12px">${actions.join('')}</div>`
+    : '';
+
+  // Footer
+  const footer = document.getElementById('detail-footer');
+  if (role === 'admin') {
+    footer.innerHTML = `<button class="btn btn-danger" onclick="deleteOrder()">🗑 Delete Order</button>`;
+  } else {
+    footer.innerHTML = '';
+  }
+
+  // Timeline — show payment mode/ref if present
+  document.getElementById('detail-timeline').innerHTML = history && history.length
+    ? history.map(h => `
+        <div class="timeline-item">
+          <div class="timeline-dot" style="border-color:var(--accent)">📌</div>
+          <div class="timeline-content">
+            <div class="timeline-status">${esc(h.status)}</div>
+            <div class="timeline-meta">by <strong>${esc(h.changed_by)}</strong>${h.changed_by_dept ? ` · ${esc(h.changed_by_dept)}` : ''} · ${fmtDate(h.changed_at)}</div>
+            ${h.note ? `<div class="timeline-note">${esc(h.note)}</div>` : ''}
+            ${(h.payment_mode || h.payment_ref) ? `<div class="timeline-note" style="color:var(--success)">
+              ${h.payment_mode ? `💳 ${esc(h.payment_mode)}` : ''}${h.payment_ref ? ` &nbsp;|&nbsp; Ref: <strong>${esc(h.payment_ref)}</strong>` : ''}
+            </div>` : ''}
+          </div>
+        </div>`).join('')
+    : '<p style="color:var(--text-muted);font-size:13px">No history yet</p>';
+}
+
+function getOrderActions(o) {
+  const role = currentUser.role;
+  const status = o.status;
+  const actions = [];
+
+  // Sales
+  if (role === 'sales_department' || role === 'admin') {
+    if (status === 'Order Created') {
+      actions.push(`<button class="btn btn-primary" onclick="openStatusModal('${o.id}','${status}')">📤 Submit for Credit Check</button>`);
+    }
+    if (status === 'Quality Approved') {
+      actions.push(`<button class="btn btn-success" onclick="openStatusModal('${o.id}','${status}')">🚚 Mark as Dispatched</button>`);
+    }
+    if (status === 'Dispatched') {
+      actions.push(`<button class="btn btn-success" onclick="openStatusModal('${o.id}','${status}')">✅ Mark Delivered</button>`);
+    }
+  }
+
+  // Accounts
+  if ((role === 'accounts_department' || role === 'admin') && status === 'Pending Credit Check') {
+    actions.push(`<button class="btn btn-warning" onclick="openAccountsModal()">💳 Process Credit Check</button>`);
+  }
+  if ((role === 'accounts_department' || role === 'admin') && status === 'Amount Pending') {
+    actions.push(`<button class="btn btn-warning" onclick="openAccountsModal()">💳 Update Payment</button>`);
+  }
+  if ((role === 'accounts_department' || role === 'admin') && status === 'Credit Approved') {
+    actions.push(`<button class="btn btn-success" onclick="openStatusModal('${o.id}','${status}')">✅ Approve for Production</button>`);
+  }
+
+  // Manufacturing
+  if (role === 'partner_manufacturing' || role === 'admin') {
+    if (status === 'Approved for Production') {
+      actions.push(`<button class="btn btn-warning" onclick="openStatusModal('${o.id}','${status}')">⚙️ Start Processing</button>`);
+    }
+    if (status === 'In Processing') {
+      actions.push(`<button class="btn btn-warning" onclick="openStatusModal('${o.id}','${status}')">✅ Mark Mfg Complete</button>`);
+    }
+    if (status === 'Manufacturing Complete') {
+      actions.push(`<button class="btn btn-primary" onclick="openStatusModal('${o.id}','${status}')">🔬 Send to QC</button>`);
+    }
+  }
+
+  // Quality
+  if (role === 'quality_department' || role === 'admin') {
+    if (status === 'Sent for Quality Check') {
+      actions.push(`<button class="btn btn-success" onclick="openStatusModal('${o.id}','${status}')">✅ QC Approved</button>`);
+      actions.push(`<button class="btn btn-danger" onclick="openStatusModal('${o.id}','${status}')">❌ QC Failed — Return to Mfg</button>`);
+    }
+  }
+
+  // Manufacturing — also handles QC Failed rework
+  if (role === 'partner_manufacturing' || role === 'admin') {
+    if (status === 'Quality Check Failed') {
+      actions.push(`<button class="btn btn-warning" onclick="openStatusModal('${o.id}','${status}')">🔧 Start Rework — Set In Processing</button>`);
+    }
+  }
+
+  // Admin extra
+  if (role === 'admin') {
+    const transitions = roleTransitions[status] || [];
+    if (transitions.length && !actions.length) {
+      actions.push(`<button class="btn btn-outline" onclick="openStatusModal('${o.id}','${status}')">🔄 Update Status</button>`);
+    }
+  }
+
+  return actions;
+}
+
+/* ===== STATUS MODAL ===== */
+function openStatusModal(orderId, currentStatus) {
+  currentOrderId = orderId;
+  const sel = document.getElementById('status-select');
+  const role = currentUser.role;
+
+  let nextStatuses = [];
+  if (role === 'admin') {
+    nextStatuses = allStatuses.filter(s => s !== currentStatus);
+  } else {
+    nextStatuses = (roleTransitions[currentStatus] || []);
+  }
+
+  if (!nextStatuses.length) {
+    showToast('No valid transitions from this status', 'warning');
+    return;
+  }
+
+  sel.innerHTML = nextStatuses.map(s => `<option value="${s}">${s}</option>`).join('');
+  document.getElementById('status-note').value = '';
+  document.getElementById('status-modal-title').textContent = `Update Status — ${currentStatus}`;
+  openModal('status-modal');
+}
+
+async function submitStatusUpdate() {
+  const newStatus = document.getElementById('status-select').value;
+  const note = document.getElementById('status-note').value;
+
+  try {
+    const r = await api('PUT', `/api/orders/${currentOrderId}/status`, {
+      status: newStatus,
+      note: note,
+      dept_name: currentUser.department_name
+    });
+
+    if (r.success) {
+      showToast(`Status updated to "${newStatus}"`, 'success');
+      closeModal('status-modal');
+      closeModal('detail-modal');
+      removeOrderRow(currentOrderId, newStatus);
+    } else {
+      showToast(r.error || 'Update failed', 'error');
+    }
+  } catch(e) {
+    showToast('Error updating status', 'error');
+  }
+}
+
+/* ===== ACCOUNTS MODAL ===== */
+function openAccountsModal() {
+  if (!currentOrderData) return;
+  const o = currentOrderData;
+  const isAmountPending = o.status === 'Amount Pending';
+
+  // Dynamic title and labels based on order status
+  document.getElementById('acc-modal-title').textContent =
+    isAmountPending ? '💰 Update Payment — Amount Pending' : '💳 Credit Check';
+  document.getElementById('acc-amount-pending-notice').style.display =
+    isAmountPending ? 'block' : 'none';
+  document.getElementById('acc-payment-label').textContent =
+    isAmountPending ? 'Additional Payment Received Now (₹)' : 'Payment Received Now (₹)';
+  document.getElementById('acc-payment-hint').textContent =
+    isAmountPending
+      ? `Balance remaining: ₹${fmt(o.balance)}. Enter 0 if no new payment yet.`
+      : 'Enter 0 if no payment received at this time';
+  document.getElementById('acc-submit-btn').textContent =
+    isAmountPending ? 'Update Payment & Status' : 'Submit Decision';
+
+  // Pre-fill balance as suggested payment if amount pending
+  document.getElementById('acc-payment').value = isAmountPending ? o.balance : 0;
+
+  document.getElementById('acc-order-info').innerHTML =
+    `<strong>${esc(o.id)}</strong> — ${esc(o.client_name)} — ${esc(o.item_description)}`;
+  document.getElementById('acc-amount-due').textContent = '₹' + fmt(o.amount_due);
+  document.getElementById('acc-amount-paid').textContent = '₹' + fmt(o.amount_paid);
+  document.getElementById('acc-balance').textContent = '₹' + fmt(o.balance);
+  document.getElementById('acc-decision').value = '';
+  document.getElementById('acc-decision-hint').textContent = '';
+  document.getElementById('acc-note').value = '';
+  document.getElementById('acc-approved-by').value = '';
+  document.getElementById('acc-payment-mode').value = '';
+  document.getElementById('acc-payment-ref').value = '';
+
+  // Show/hide payment mode+ref fields based on context
+  const payFields = document.getElementById('acc-payment-fields');
+  payFields.style.display = 'grid'; // always show
+
+  openModal('accounts-modal');
+}
+
+function accSuggestDecision() {
+  if (!currentOrderData) return;
+  const o = currentOrderData;
+  const payment = parseFloat(document.getElementById('acc-payment').value) || 0;
+  const newBalance = o.balance - payment;
+  const hint = document.getElementById('acc-decision-hint');
+  if (payment > 0) {
+    if (newBalance <= 0) {
+      hint.textContent = '✅ After this payment, balance will be fully cleared — suggest: Approve';
+      hint.style.color = 'var(--success)';
+      document.getElementById('acc-decision').value = 'approved';
+    } else {
+      hint.textContent = `⚠️ After this payment, ₹${fmt(newBalance)} will still be due — suggest: Amount Pending`;
+      hint.style.color = 'var(--warning)';
+      document.getElementById('acc-decision').value = 'pending';
+    }
+  } else {
+    hint.textContent = '';
+    hint.style.color = '';
+  }
+}
+
+function toggleCreditOptions() {}
+
+async function processCreditCheck() {
+  const decision = document.getElementById('acc-decision').value;
+  const payment = parseFloat(document.getElementById('acc-payment').value) || 0;
+  const note = document.getElementById('acc-note').value;
+  const approvedBy = document.getElementById('acc-approved-by').value.trim();
+  const paymentMode = document.getElementById('acc-payment-mode').value;
+  const paymentRef = document.getElementById('acc-payment-ref').value.trim();
+
+  if (!approvedBy) {
+    showToast('Please enter the name of the person processing this', 'error');
+    document.getElementById('acc-approved-by').focus();
+    return;
+  }
+  if (!decision) {
+    showToast('Please select a credit decision', 'error');
+    return;
+  }
+  // If payment was received, mode is required
+  if (payment > 0 && !paymentMode) {
+    showToast('Please select the mode of payment', 'error');
+    document.getElementById('acc-payment-mode').focus();
+    return;
+  }
+
+  const btn = document.getElementById('acc-submit-btn');
+  btn.disabled = true;
+  btn.textContent = 'Processing...';
+
+  try {
+    const r = await api('POST', `/api/orders/${currentOrderData.id}/credit-check`, {
+      payment_amount: payment,
+      decision: decision,
+      note: note,
+      approved_by: approvedBy,
+      payment_mode: paymentMode,
+      payment_ref: paymentRef
+    });
+
+    if (r.success) {
+      const balanceMsg = r.balance > 0 ? ` Balance: ₹${fmt(r.balance)}` : ' — Fully paid ✓';
+      showToast(`✅ Status updated to "${r.new_status}".${balanceMsg}`, 'success');
+      closeModal('accounts-modal');
+      closeModal('detail-modal');
+      refreshView();
+    } else {
+      showToast(r.error || 'Error processing decision', 'error');
+    }
+  } catch(e) {
+    showToast('Connection error — please try again', 'error');
+  } finally {
+    btn.disabled = false;
+    btn.textContent = 'Submit Decision';
+  }
+}
+
+/* ===== CREATE ORDER ===== */
+function calcOrderTotal() {
+  const qty = parseInt(document.getElementById('o-qty').value) || 1;
+  const price = parseFloat(document.getElementById('o-unit-price').value) || 0;
+  document.getElementById('o-amount').value = (qty * price).toFixed(2);
+}
+
+async function submitOrder() {
+  const clientName = document.getElementById('o-client-name').value.trim();
+  const item = document.getElementById('o-item').value.trim();
+  const takenBy = document.getElementById('o-taken-by').value.trim();
+
+  if (!clientName || !item) {
+    showToast('Client name and item description are required', 'error');
+    return;
+  }
+  if (!takenBy) {
+    showToast('Please enter the name of the person who took this order', 'error');
+    document.getElementById('o-taken-by').focus();
+    return;
+  }
+
+  const data = {
+    company_id: currentUser.company_id,
+    client_name: clientName,
+    client_phone: document.getElementById('o-phone').value,
+    client_email: document.getElementById('o-email').value,
+    item_description: item,
+    quantity: parseInt(document.getElementById('o-qty').value) || 1,
+    unit_price: parseFloat(document.getElementById('o-unit-price').value) || 0,
+    amount_due: parseFloat(document.getElementById('o-amount').value) || 0,
+    priority: document.getElementById('o-priority').value,
+    notes: document.getElementById('o-notes').value,
+    taken_by: takenBy,
+    dept_name: currentUser.department_name
+  };
+
+  try {
+    const r = await api('POST', '/api/orders', data);
+    if (r.success) {
+      showToast(`Order ${r.order_id} created!`, 'success');
+      closeModal('create-modal');
+      clearOrderForm();
+      refreshView();
+    } else {
+      showToast(r.error || 'Create failed', 'error');
+    }
+  } catch(e) {
+    showToast('Error creating order', 'error');
+  }
+}
+
+function clearOrderForm() {
+  ['o-client-name','o-phone','o-email','o-item','o-notes','o-taken-by'].forEach(id => document.getElementById(id).value = '');
+  document.getElementById('o-qty').value = 1;
+  document.getElementById('o-unit-price').value = 0;
+  document.getElementById('o-amount').value = 0;
+  document.getElementById('o-priority').value = 'normal';
+}
+
+async function deleteOrder() {
+  if (!confirm('Are you sure you want to permanently delete this order?')) return;
+  try {
+    const r = await api('DELETE', `/api/orders/${currentOrderId}`);
+    if (r.success) {
+      showToast('Order deleted', 'success');
+      closeModal('detail-modal');
+      removeOrderRow(currentOrderId, null);
+    }
+  } catch(e) {
+    showToast('Error deleting order', 'error');
+  }
+}
+
+/* ===== WORKFLOW BOARD ===== */
+async function loadWorkflow() {
+  try {
+    const orders = await api('GET', `/api/orders?company_id=${currentUser.company_id}`);
+    renderWorkflow(orders);
+  } catch(e) {}
+}
+
+function renderWorkflow(orders) {
+  const board = document.getElementById('workflow-board');
+  const grouped = {};
+  visibleStatuses.forEach(s => { grouped[s] = []; });
+  orders.forEach(o => {
+    if (grouped[o.status]) grouped[o.status].push(o);
+    else {
+      grouped[o.status] = grouped[o.status] || [];
+      grouped[o.status].push(o);
+    }
+  });
+
+  board.innerHTML = visibleStatuses.map(s => `
+    <div class="pipeline-col">
+      <div class="pipeline-header">
+        <span class="pipeline-title">${esc(s)}</span>
+        <span class="pipeline-count">${grouped[s]?.length || 0}</span>
+      </div>
+      <div class="pipeline-body">
+        ${(grouped[s] || []).map(o => `
+          <div class="pipeline-card" data-order-id="${o.id}" onclick="openOrderDetail('${o.id}')">
+            <div class="pipeline-card-id">${esc(o.id)}</div>
+            <div class="pipeline-card-client">${esc(o.client_name)}</div>
+            <div class="pipeline-card-item">${esc(o.item_description)}</div>
+            <div class="pipeline-card-meta">
+              <span class="priority-${o.priority}">${priorityIcon(o.priority)}</span>
+              <span style="font-size:11px;color:var(--text-muted)">${fmtDate(o.updated_at)}</span>
+            </div>
+          </div>`).join('')}
+        ${!grouped[s]?.length ? '<div style="font-size:12px;color:var(--text-dim);text-align:center;padding:20px">No orders</div>' : ''}
+      </div>
+    </div>`).join('');
+}
+
+/* ===== ADMIN PANEL ===== */
+function switchAdminTab(tab) {
+  document.querySelectorAll('.admin-tab').forEach((t, i) => t.classList.remove('active'));
+  document.querySelectorAll('.admin-tab-content').forEach(c => c.classList.remove('active'));
+  document.querySelector(`.admin-tab[onclick*="${tab}"]`)?.classList.add('active');
+  document.getElementById(`admin-tab-${tab}`)?.classList.add('active');
+
+  if (tab === 'departments') loadAdminDepts();
+  else if (tab === 'users') loadAdminUsers();
+  else if (tab === 'company') loadCompanyForm();
+}
+
+async function loadAdminPanel() {
+  await loadAdminDepts();
+}
+
+async function loadAdminDepts() {
+  try {
+    const depts = await api('GET', `/api/departments/${currentUser.company_id}`);
+    renderDeptGrid(depts);
+  } catch(e) {}
+}
+
+const deptIcons = {
+  sales_department: '💼',
+  accounts_department: '💰',
+  partner_manufacturing: '🔧',
+  quality_department: '🔬',
+};
+const deptColors = {
+  sales_department: 'var(--sales)',
+  accounts_department: 'var(--accounts)',
+  partner_manufacturing: 'var(--manufacturing)',
+  quality_department: 'var(--quality)',
+};
+
+function renderDeptGrid(depts) {
+  const el = document.getElementById('dept-grid');
+  if (!depts.length) {
+    el.innerHTML = `<div class="empty-state"><div class="empty-icon">🏢</div><p>No departments yet. Add one to get started.</p></div>`;
+    return;
+  }
+
+  el.innerHTML = depts.map(d => `
+    <div class="dept-card">
+      <div class="dept-card-top">
+        <div class="dept-card-icon" style="background:${deptColors[d.role_type]+'22'};color:${deptColors[d.role_type]}">${deptIcons[d.role_type] || '🏢'}</div>
+        <div class="dept-card-actions">
+          <button class="btn btn-ghost" title="Edit" onclick="editDept('${d.id}','${esc(d.name)}','${d.role_type}','${esc(d.description||'')}')">✏️</button>
+          <button class="btn btn-ghost" title="Delete" onclick="deleteDept('${d.id}','${esc(d.name)}')" style="color:var(--danger)">🗑</button>
+        </div>
+      </div>
+      <div class="dept-card-name">${esc(d.name)}</div>
+      <div class="dept-card-desc">${esc(d.description || 'No description')}</div>
+      <div class="dept-card-meta">
+        <span class="badge ${d.role_type === 'sales_department' ? 'badge-blue' : d.role_type === 'accounts_department' ? 'badge-green' : d.role_type === 'partner_manufacturing' ? 'badge-yellow' : 'badge-purple'}">${esc(d.role_label)}</span>
+        <span>👤 ${d.user_count} users</span>
+      </div>
+    </div>`).join('');
+}
+
+async function addDepartment() {
+  const name = document.getElementById('dept-name').value.trim();
+  const role = document.getElementById('dept-role').value;
+  const desc = document.getElementById('dept-desc').value;
+
+  if (!name || !role) { showToast('Name and role type required', 'error'); return; }
+
+  try {
+    const r = await api('POST', '/api/departments', {
+      company_id: currentUser.company_id,
+      name, role_type: role, description: desc
+    });
+    if (r.success) {
+      showToast('Department added!', 'success');
+      closeModal('dept-modal');
+      document.getElementById('dept-name').value = '';
+      document.getElementById('dept-desc').value = '';
+      loadAdminDepts();
+    }
+  } catch(e) { showToast('Error', 'error'); }
+}
+
+function editDept(id, name, roleType, desc) {
+  document.getElementById('dept-name').value = name;
+  document.getElementById('dept-role').value = roleType;
+  document.getElementById('dept-desc').value = desc;
+  // Change the button to update
+  document.querySelector('#dept-modal .modal-footer .btn-primary').setAttribute('onclick', `updateDept('${id}')`);
+  document.getElementById('dept-modal .modal-header h3') && (document.querySelector('#dept-modal .modal-header h3').textContent = '✏️ Edit Department');
+  openModal('dept-modal');
+}
+
+async function updateDept(id) {
+  const name = document.getElementById('dept-name').value.trim();
+  const role = document.getElementById('dept-role').value;
+  const desc = document.getElementById('dept-desc').value;
+  if (!name) { showToast('Name required', 'error'); return; }
+  try {
+    const r = await api('PUT', `/api/departments/detail/${id}`, { name, role_type: role, description: desc });
+    if (r.success) {
+      showToast('Department updated!', 'success');
+      closeModal('dept-modal');
+      document.querySelector('#dept-modal .modal-footer .btn-primary').setAttribute('onclick', 'addDepartment()');
+      loadAdminDepts();
+    }
+  } catch(e) { showToast('Error', 'error'); }
+}
+
+async function deleteDept(id, name) {
+  if (!confirm(`Delete department "${name}"? Users in this dept will lose their assignment.`)) return;
+  try {
+    const r = await api('DELETE', `/api/departments/detail/${id}`);
+    if (r.success) { showToast('Department deleted', 'success'); loadAdminDepts(); }
+    else showToast(r.error || 'Error', 'error');
+  } catch(e) { showToast(e.message || 'Error', 'error'); }
+}
+
+async function loadAdminUsers() {
+  try {
+    const users = await api('GET', `/api/users/${currentUser.company_id}`);
+    renderUsersTable(users);
+  } catch(e) {}
+}
+
+function renderUsersTable(users) {
+  const el = document.getElementById('users-table');
+  if (!users.length) {
+    el.innerHTML = `<div class="empty-state"><div class="empty-icon">👥</div><p>No users yet</p></div>`;
+    return;
+  }
+
+  el.innerHTML = `<table>
+    <thead><tr>
+      <th>Name</th><th>Username</th><th>Department</th><th>Role</th><th>Status</th><th>Last Login</th><th>Action</th>
+    </tr></thead>
+    <tbody>
+      ${users.map(u => `
+        <tr>
+          <td><strong>${esc(u.full_name)}</strong><br><span style="font-size:11px;color:var(--text-muted)">${esc(u.email||'')}</span></td>
+          <td><code style="font-size:12px">${esc(u.username)}</code></td>
+          <td>${esc(u.department_name || 'Admin')}</td>
+          <td><span class="badge badge-blue">${esc(u.role_label || u.role)}</span></td>
+          <td><span class="badge ${u.is_active ? 'badge-green' : 'badge-red'}">${u.is_active ? 'Active' : 'Inactive'}</span></td>
+          <td style="font-size:11px;color:var(--text-muted)">${u.last_login ? fmtDate(u.last_login) : 'Never'}</td>
+          <td>
+            <div class="action-btns">
+              <button class="btn btn-ghost btn-sm" onclick="toggleUserActive(${u.id},${!u.is_active})">${u.is_active ? '🔒 Deactivate' : '🔓 Activate'}</button>
+              <button class="btn btn-ghost btn-sm" style="color:var(--danger)" onclick="deleteUser(${u.id},'${esc(u.full_name)}')">🗑</button>
+            </div>
+          </td>
+        </tr>`).join('')}
+    </tbody>
+  </table>`;
+}
+
+async function openUserModal() {
+  try {
+    const depts = await api('GET', `/api/departments/${currentUser.company_id}`);
+    const sel = document.getElementById('u-department');
+    sel.innerHTML = '<option value="">None (Admin)</option>' +
+      depts.map(d => `<option value="${d.id}">${esc(d.name)}</option>`).join('');
+  } catch(e) {}
+  openModal('user-modal');
+}
+
+async function addUser() {
+  const fullname = document.getElementById('u-fullname').value.trim();
+  const username = document.getElementById('u-username').value.trim();
+  const password = document.getElementById('u-password').value;
+  const role = document.getElementById('u-role').value;
+
+  if (!fullname || !username || !password || !role) {
+    showToast('Full name, username, password and role are required', 'error');
+    return;
+  }
+
+  try {
+    const r = await api('POST', '/api/users', {
+      username, password, full_name: fullname, role,
+      email: document.getElementById('u-email').value,
+      phone: document.getElementById('u-phone').value,
+      department_id: document.getElementById('u-department').value || null,
+      company_id: currentUser.company_id
+    });
+
+    if (r.success) {
+      showToast('User added!', 'success');
+      closeModal('user-modal');
+      ['u-fullname','u-username','u-password','u-email','u-phone'].forEach(id => document.getElementById(id).value = '');
+      loadAdminUsers();
+    } else {
+      showToast(r.error || 'Error', 'error');
+    }
+  } catch(e) { showToast('Error', 'error'); }
+}
+
+async function toggleUserActive(userId, newState) {
+  try {
+    const r = await api('PUT', `/api/users/detail/${userId}`, { is_active: newState });
+    if (r.success) { showToast('User updated', 'success'); loadAdminUsers(); }
+  } catch(e) {}
+}
+
+async function deleteUser(userId, name) {
+  if (!confirm(`Delete user "${name}"? This cannot be undone.`)) return;
+  try {
+    const r = await api('DELETE', `/api/users/detail/${userId}`);
+    if (r.success) { showToast('User deleted', 'success'); loadAdminUsers(); }
+    else showToast(r.error || 'Error', 'error');
+  } catch(e) { showToast('Error', 'error'); }
+}
+
+async function loadCompanyForm() {
+  try {
+    const companies = await api('GET', '/api/companies');
+    const c = companies.find(co => co.id === currentUser.company_id) || {};
+    document.getElementById('company-form-wrap').innerHTML = `
+      <div style="max-width:520px">
+        <div class="table-wrap" style="padding:24px">
+          <h3 style="margin-bottom:20px">Company Details</h3>
+          <div class="form-grid">
+            <div class="field form-full"><label>Company Name</label><input type="text" class="input" id="co-name" value="${esc(c.name||'')}"></div>
+            <div class="field form-full"><label>Address</label><textarea class="input" id="co-address">${esc(c.address||'')}</textarea></div>
+            <div class="field"><label>Contact Email</label><input type="email" class="input" id="co-email" value="${esc(c.contact_email||'')}"></div>
+            <div class="field"><label>Contact Phone</label><input type="text" class="input" id="co-phone" value="${esc(c.contact_phone||'')}"></div>
+          </div>
+          <button class="btn btn-primary" onclick="saveCompany('${c.id}')">Save Changes</button>
+        </div>
+      </div>`;
+  } catch(e) {}
+}
+
+async function saveCompany(id) {
+  try {
+    const r = await api('PUT', `/api/companies/${id}`, {
+      name: document.getElementById('co-name').value,
+      address: document.getElementById('co-address').value,
+      contact_email: document.getElementById('co-email').value,
+      contact_phone: document.getElementById('co-phone').value
+    });
+    if (r.success) showToast('Company updated!', 'success');
+  } catch(e) { showToast('Error', 'error'); }
+}
+
+/* ===== UTILITIES ===== */
+function openModal(id) { document.getElementById(id).classList.add('open'); }
+function closeModal(id) { document.getElementById(id).classList.remove('open'); }
+function openCreateModal() { openModal('create-modal'); }
+
+function statusClass(status) {
+  if (!status) return '';
+  return 'status-' + status.replace(/\s+/g, '-').replace(/\//g, '-');
+}
+
+function esc(str) {
+  if (!str) return '';
+  return String(str).replace(/[&<>"']/g, m => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]));
+}
+
+function fmtDate(ds) {
+  if (!ds) return '—';
+  const d = new Date(ds);
+  return d.toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' });
+}
+
+function showToast(msg, type = 'success') {
+  const c = document.getElementById('toast-container');
+  const t = document.createElement('div');
+  const icons = { success: '✅', error: '❌', warning: '⚠️', info: 'ℹ️' };
+  t.className = `toast ${type}`;
+  t.innerHTML = `<span>${icons[type]||''}</span> ${msg}`;
+  c.appendChild(t);
+  setTimeout(() => t.remove(), 3500);
+}
+
+async function api(method, path, body) {
+  const opts = { method, credentials: 'include', headers: { 'Content-Type': 'application/json' } };
+  if (body) opts.body = JSON.stringify(body);
+  const r = await fetch(path, opts);
+  return r.json();
+}
+
+function refreshView() {
+  const active = document.querySelector('.nav-item.active')?.dataset?.view;
+  if (active === 'dashboard') loadDashboard();
+  else if (active === 'orders') loadOrders();
+  else if (active === 'workflow') loadWorkflow();
+  else if (active === 'admin') loadAdminPanel();
+}
+
+// Instantly animate-out a row by order ID, then silently refresh stats in background
+function removeOrderRow(orderId, newStatus) {
+  // Find and animate all matching rows across both tables
+  document.querySelectorAll(`tr[data-order-id="${orderId}"]`).forEach(row => {
+    row.classList.add('removing');
+    setTimeout(() => {
+      row.remove();
+      // After row gone, check if table is now empty and show empty state
+      const tbody = document.querySelector('#orders-table-body tbody, #recent-orders-table tbody');
+      if (tbody && tbody.querySelectorAll('tr:not(.removing)').length === 0) {
+        const wrap = tbody.closest('.table-wrap') || tbody.closest('div');
+        if (wrap) refreshView();
+      }
+    }, 420);
+  });
+
+  // Also update workflow board card instantly
+  const pipelineCard = document.querySelector(`.pipeline-card[data-order-id="${orderId}"]`);
+  if (pipelineCard) {
+    pipelineCard.style.transition = 'all 0.3s ease';
+    pipelineCard.style.opacity = '0';
+    pipelineCard.style.transform = 'scale(0.9)';
+    setTimeout(() => {
+      const col = pipelineCard.closest('.pipeline-col');
+      pipelineCard.remove();
+      // Update count badge
+      if (col) {
+        const remaining = col.querySelectorAll('.pipeline-card').length;
+        const badge = col.querySelector('.pipeline-count');
+        if (badge) badge.textContent = remaining;
+        if (remaining === 0) {
+          const body = col.querySelector('.pipeline-body');
+          if (body) body.innerHTML = '<div style="font-size:12px;color:var(--text-dim);text-align:center;padding:20px">No orders</div>';
+        }
+      }
+    }, 320);
+  }
+
+  // Silently refresh stats in background (no full re-render)
+  api('GET', `/api/stats?company_id=${currentUser.company_id}`).then(stats => renderStats(stats)).catch(()=>{});
+}
+
+// Close modal on backdrop click
+document.querySelectorAll('.modal').forEach(m => {
+  m.addEventListener('click', e => { if (e.target === m) m.classList.remove('open'); });
+});
+
+// Boot
+checkAuth();
+</script>
+</body>
+</html>

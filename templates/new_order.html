@@ -1,0 +1,471 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Maktronic Manufacturing – Order Management System</title>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;500;600;700;800&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+.invoice-wrapper { max-width: 940px; margin: 0 auto; }
+
+.invoice-doc {
+  background: #fff;
+  border-radius: 16px;
+  box-shadow: 0 8px 40px rgba(0,0,0,0.12);
+  overflow: hidden;
+  color: #1a1a2e;
+  font-family: 'Inter', 'DM Sans', sans-serif;
+}
+
+/* Header */
+.inv-header {
+  background: linear-gradient(135deg, #1e2a4a 0%, #2d3a6b 60%, #3b4fa0 100%);
+  padding: 30px 40px 26px;
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 24px;
+}
+
+.inv-brand { display: flex; align-items: center; gap: 14px; }
+
+.inv-brand-icon {
+  width: 52px; height: 52px;
+  background: rgba(255,255,255,0.15);
+  border: 2px solid rgba(255,255,255,0.25);
+  border-radius: 12px;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 24px; flex-shrink: 0;
+}
+
+.inv-brand-name { color:#fff; font-size:20px; font-weight:800; letter-spacing:-0.4px; line-height:1.2; }
+.inv-brand-sub  { color:rgba(255,255,255,0.55); font-size:12px; margin-top:2px; }
+
+.inv-meta { text-align:right; }
+.inv-doc-label { color:rgba(255,255,255,0.5); font-size:10px; font-weight:700; text-transform:uppercase; letter-spacing:1.5px; }
+.inv-doc-id    { color:#fff; font-size:26px; font-weight:800; letter-spacing:-0.5px; margin-top:4px; }
+
+.inv-meta-fields { display:flex; gap:20px; margin-top:10px; justify-content:flex-end; flex-wrap:wrap; }
+
+.inv-meta-field label {
+  display:block; color:rgba(255,255,255,0.5); font-size:10px; font-weight:700;
+  text-transform:uppercase; letter-spacing:0.8px; margin-bottom:4px;
+}
+.inv-meta-field input,
+.inv-meta-field select {
+  background:rgba(255,255,255,0.12); border:1.5px solid rgba(255,255,255,0.22);
+  border-radius:8px; color:#fff; font-size:13px; font-weight:600;
+  padding:7px 12px; outline:none; font-family:inherit; min-width:130px;
+}
+.inv-meta-field input::placeholder { color:rgba(255,255,255,0.35); }
+.inv-meta-field select option { background:#2d3a6b; color:#fff; }
+
+/* Ribbon */
+.inv-ribbon {
+  background:#f0f4ff; border-bottom:2px solid #dde4f7;
+  padding:9px 40px; display:flex; align-items:center; gap:10px;
+  font-size:12px; color:#4a5568;
+}
+.inv-ribbon-dot { width:8px; height:8px; border-radius:50%; background:#4f46e5; flex-shrink:0; }
+
+/* Body */
+.inv-body { padding:28px 40px; display:grid; grid-template-columns:1fr 1fr; gap:20px; }
+
+.inv-section {
+  background:#f8faff; border:1.5px solid #e4eaf8; border-radius:12px; padding:18px 20px;
+}
+.inv-section.fw { grid-column:1/-1; }
+
+.inv-section-title {
+  font-size:10px; font-weight:800; text-transform:uppercase; letter-spacing:1.2px;
+  color:#4f46e5; margin-bottom:14px; display:flex; align-items:center; gap:8px;
+}
+.inv-section-title::after { content:''; flex:1; height:1px; background:#dde4f7; }
+
+.inv-field { margin-bottom:12px; }
+.inv-field:last-child { margin-bottom:0; }
+.inv-field label { display:block; font-size:11px; font-weight:700; color:#6b7280; text-transform:uppercase; letter-spacing:0.5px; margin-bottom:5px; }
+.inv-field label .req { color:#ef4444; margin-left:2px; }
+
+.inv-field input,
+.inv-field select,
+.inv-field textarea {
+  width:100%; padding:9px 12px; background:#fff; border:1.5px solid #dde4f7;
+  border-radius:8px; color:#1a1a2e; font-size:13.5px; font-family:inherit; outline:none;
+  transition:border-color .15s, box-shadow .15s;
+}
+.inv-field input:focus,
+.inv-field select:focus,
+.inv-field textarea:focus { border-color:#4f46e5; box-shadow:0 0 0 3px rgba(79,70,229,0.1); }
+.inv-field textarea { resize:vertical; min-height:68px; }
+
+.inv-grid-2 { display:grid; grid-template-columns:1fr 1fr; gap:12px; }
+.inv-grid-3 { display:grid; grid-template-columns:1fr 1fr 1fr; gap:12px; }
+
+/* Sales rep highlight */
+.inv-field.hl input { border-color:#4f46e5; background:#f5f3ff; }
+.inv-field.hl label { color:#4f46e5; }
+
+/* Items */
+.inv-items-wrap { padding:0 40px; }
+.items-section-label {
+  font-size:10px; font-weight:800; text-transform:uppercase; letter-spacing:1.2px;
+  color:#4f46e5; margin-bottom:12px; display:flex; align-items:center; gap:8px;
+}
+.items-section-label::after { content:''; flex:1; height:1px; background:#dde4f7; }
+
+.inv-items-table {
+  width:100%; border-collapse:separate; border-spacing:0;
+  border:1.5px solid #dde4f7; border-radius:10px; overflow:hidden;
+}
+.inv-items-table thead tr { background:#f0f4ff; }
+.inv-items-table th {
+  padding:10px 12px; font-size:10px; font-weight:800; text-transform:uppercase;
+  letter-spacing:0.8px; color:#4a5568; text-align:left; border-bottom:1.5px solid #dde4f7;
+}
+.inv-items-table td { padding:6px 7px; border-bottom:1px solid #f0f4ff; vertical-align:middle; }
+.inv-items-table tr:last-child td { border-bottom:none; }
+
+.inv-items-table input {
+  width:100%; padding:8px 10px; border:1.5px solid #e8edf8; border-radius:7px;
+  font-size:13px; font-family:inherit; color:#1a1a2e; background:#fff; outline:none;
+  transition:border-color .15s, box-shadow .15s;
+}
+.inv-items-table input:focus { border-color:#4f46e5; box-shadow:0 0 0 2px rgba(79,70,229,0.1); }
+.inv-items-table input.tc { background:#f8faff; font-weight:700; cursor:not-allowed; color:#374151; }
+
+.row-num { text-align:center; color:#9ca3af; font-size:12px; font-weight:600; width:36px; }
+
+.del-btn {
+  background:none; border:none; cursor:pointer; color:#d1d5db;
+  font-size:20px; padding:4px 8px; border-radius:6px; transition:all .15s; display:block; margin:auto;
+}
+.del-btn:hover { color:#ef4444; background:#fef2f2; }
+
+.add-item-btn {
+  margin-top:10px; display:inline-flex; align-items:center; gap:6px;
+  padding:7px 14px; background:#f0f4ff; border:1.5px dashed #c7d2f8;
+  border-radius:8px; color:#4f46e5; font-size:12px; font-weight:700;
+  cursor:pointer; transition:all .15s; font-family:inherit;
+}
+.add-item-btn:hover { background:#e6eaff; border-color:#4f46e5; }
+
+/* Totals */
+.inv-totals-wrap { padding:20px 40px 0; display:flex; justify-content:flex-end; }
+.inv-totals { width:290px; border:1.5px solid #dde4f7; border-radius:12px; overflow:hidden; background:#f8faff; }
+
+.inv-total-row {
+  display:flex; justify-content:space-between; align-items:center;
+  padding:10px 16px; font-size:13.5px; color:#4a5568; border-bottom:1px solid #eff2fc;
+}
+.inv-total-row:last-child { border-bottom:none; }
+.inv-total-row span:last-child { font-weight:700; color:#1a1a2e; }
+
+.inv-grand-row {
+  background:linear-gradient(135deg,#1e2a4a,#3b4fa0);
+  padding:14px 16px; display:flex; justify-content:space-between; align-items:center;
+}
+.grand-label { color:rgba(255,255,255,0.8); font-size:12px; font-weight:700; text-transform:uppercase; letter-spacing:0.5px; }
+.grand-value { color:#fff; font-size:22px; font-weight:800; letter-spacing:-0.5px; }
+
+/* Notes/Terms */
+.inv-extra { padding:20px 40px 0; }
+.inv-extra-grid { display:grid; grid-template-columns:1fr 1fr; gap:16px; }
+
+/* Footer */
+.inv-footer {
+  padding:22px 40px; display:flex; justify-content:space-between; align-items:center;
+  border-top:1.5px solid #e4eaf8; margin-top:24px;
+  background:#fafbff;
+}
+.inv-footer-sum { font-size:12px; color:#9ca3af; }
+.inv-footer-sum strong { color:#374151; }
+.inv-footer-actions { display:flex; gap:10px; }
+
+.inv-btn {
+  display:inline-flex; align-items:center; gap:7px; padding:11px 22px;
+  border:none; border-radius:9px; font-size:14px; font-weight:700;
+  cursor:pointer; font-family:inherit; transition:all .15s; text-decoration:none;
+}
+.inv-btn-ghost { background:#f3f4f6; color:#6b7280; border:1.5px solid #e5e7eb; }
+.inv-btn-ghost:hover { background:#e5e7eb; color:#374151; }
+.inv-btn-draft { background:#fff7ed; color:#c2410c; border:1.5px solid #fed7aa; }
+.inv-btn-draft:hover { background:#ffedd5; }
+.inv-btn-place {
+  background:linear-gradient(135deg,#4f46e5,#6366f1); color:#fff;
+  box-shadow:0 4px 14px rgba(79,70,229,0.3);
+}
+.inv-btn-place:hover { transform:translateY(-1px); box-shadow:0 6px 20px rgba(79,70,229,0.4); }
+
+@media (max-width:700px) {
+  .inv-body { grid-template-columns:1fr; }
+  .inv-section.fw { grid-column:1; }
+  .inv-header { flex-direction:column; }
+  .inv-meta { text-align:left; }
+  .inv-meta-fields { justify-content:flex-start; }
+  .inv-body,.inv-items-wrap,.inv-totals-wrap,.inv-extra,.inv-footer { padding-left:18px; padding-right:18px; }
+  .inv-totals { width:100%; }
+  .inv-grid-2,.inv-grid-3 { grid-template-columns:1fr; }
+  .inv-extra-grid { grid-template-columns:1fr; }
+}
+</style>
+</head>
+<body>
+
+<div class="page-header" style="display:flex;justify-content:space-between;align-items:center;margin-bottom:20px">
+  <div>
+    <h2 style="font-size:22px;font-weight:800;color:#111">New Sales Order</h2>
+    <p style="font-size:13px;color:#6b7280;margin-top:2px">Fill in all details to create a new order</p>
+  </div>
+  <a href="/orders" class="inv-btn inv-btn-ghost" style="font-size:13px">← Back</a>
+</div>
+
+<div class="invoice-wrapper">
+<form method="POST">
+<div class="invoice-doc">
+
+  <!-- HEADER -->
+  <div class="inv-header">
+    <div class="inv-brand">
+      <div class="inv-brand-icon">⚡</div>
+      <div>
+        <div class="inv-brand-name">Maktronic Manufacturing</div>
+        <div class="inv-brand-sub">Sales Order</div>
+      </div>
+    </div>
+    <div class="inv-meta">
+      <div class="inv-doc-label">Order No.</div>
+      <div class="inv-doc-id">{{ order_id }}</div>
+      <div class="inv-meta-fields">
+        <div class="inv-meta-field">
+          <label>Date</label>
+          <input name="order_date" type="date" value="{{ today }}" />
+        </div>
+        <div class="inv-meta-field">
+          <label>Priority</label>
+          <select name="priority">
+            <option value="normal">⚪ Normal</option>
+            <option value="high">🟡 High</option>
+            <option value="urgent">🔴 Urgent</option>
+            <option value="low">⬇️ Low</option>
+          </select>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- RIBBON -->
+  <div class="inv-ribbon">
+    <div class="inv-ribbon-dot"></div>
+    <span>Draft Order — will be submitted for credit check after placing</span>
+  </div>
+
+  <!-- BODY SECTIONS -->
+  <div class="inv-body">
+
+    <!-- A: Bill To -->
+    <div class="inv-section">
+      <div class="inv-section-title">A · Bill To</div>
+      <div class="inv-field">
+        <label>Company / Client <span class="req">*</span></label>
+        <select name="company">
+          <option value="">— Select Client —</option>
+          {% for c in clients %}
+          <option value="{{ c.name }}">{{ c.name }}</option>
+          {% endfor %}
+        </select>
+      </div>
+      <div class="inv-field">
+        <label>Contact Phone</label>
+        <input name="phone" placeholder="+91 98765 43210" />
+      </div>
+      <div class="inv-field">
+        <label>Email Address</label>
+        <input name="email" type="email" placeholder="client@company.com" />
+      </div>
+      <div class="inv-field">
+        <label>Billing Address</label>
+        <textarea name="address" placeholder="Full billing address..."></textarea>
+      </div>
+    </div>
+
+    <!-- B: Tax & Compliance -->
+    <div class="inv-section">
+      <div class="inv-section-title">B · Tax & Compliance</div>
+      <div class="inv-field">
+        <label>GST Number</label>
+        <input name="gst" placeholder="27AAPFU0939F1ZV" style="text-transform:uppercase" />
+      </div>
+      <div class="inv-field">
+        <label>PAN Number</label>
+        <input name="pan" placeholder="ABCDE1234F" style="text-transform:uppercase" />
+      </div>
+      <div class="inv-field">
+        <label>Shipping Address <span style="font-weight:400;color:#9ca3af">(if different)</span></label>
+        <textarea name="shipping_address" placeholder="Delivery address if different from billing..."></textarea>
+      </div>
+    </div>
+
+    <!-- C: Sales Rep + Notes -->
+    <div class="inv-section fw">
+      <div class="inv-section-title">C · Sales Representative & Order Details</div>
+      <div class="inv-grid-3">
+        <div class="inv-field hl" style="grid-column:1/3">
+          <label>Order Taken By <span class="req">*</span></label>
+          <input name="taken_by" placeholder="Full name of the sales person responsible for this order" required />
+        </div>
+        <div class="inv-field">
+          <label>Department / Branch</label>
+          <input name="dept_branch" placeholder="e.g. Mumbai Sales" />
+        </div>
+      </div>
+      <div class="inv-field">
+        <label>Client Notes / Special Requirements</label>
+        <textarea name="notes" placeholder="Any client-specific requirements, delivery instructions, or special terms..."></textarea>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- LINE ITEMS -->
+  <div class="inv-items-wrap">
+    <div class="items-section-label">D · Order Line Items</div>
+    <div style="overflow-x:auto">
+      <table class="inv-items-table">
+        <thead>
+          <tr>
+            <th style="width:4%">#</th>
+            <th style="width:38%">Description of Item / Service</th>
+            <th style="width:10%">HSN / SAC</th>
+            <th style="width:12%">Qty</th>
+            <th style="width:16%">Unit Rate (₹)</th>
+            <th style="width:14%">Amount (₹)</th>
+            <th style="width:6%"></th>
+          </tr>
+        </thead>
+        <tbody id="itemsBody">
+          <tr>
+            <td class="row-num">1</td>
+            <td><input name="particular" placeholder="Item or service description" /></td>
+            <td><input name="hsn" placeholder="HSN code" /></td>
+            <td><input name="qty" type="number" value="1" min="1" oninput="calcInvoice()" /></td>
+            <td><input name="rate" type="number" value="0" min="0" step="0.01" oninput="calcInvoice()" /></td>
+            <td><input class="tc" disabled value="₹0.00" /></td>
+            <td><button type="button" class="del-btn" onclick="removeRow(this)">×</button></td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+    <button type="button" class="add-item-btn" onclick="addRow()">+ Add Line Item</button>
+  </div>
+
+  <!-- TOTALS -->
+  <div class="inv-totals-wrap">
+    <div class="inv-totals">
+      <div class="inv-total-row"><span>Subtotal</span><span id="inv-sub">₹0.00</span></div>
+      <div class="inv-total-row"><span>CGST (9%)</span><span id="inv-cgst">₹0.00</span></div>
+      <div class="inv-total-row"><span>SGST (9%)</span><span id="inv-sgst">₹0.00</span></div>
+      <div class="inv-grand-row">
+        <span class="grand-label">Grand Total</span>
+        <span class="grand-value" id="inv-grand">₹0.00</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- EXTRA: Terms + Internal Notes -->
+  <div class="inv-extra">
+    <div class="items-section-label" style="margin-top:4px">E · Terms & Internal Notes</div>
+    <div class="inv-extra-grid">
+      <div class="inv-section" style="padding:16px 18px">
+        <div class="inv-section-title" style="margin-bottom:10px">Payment Terms</div>
+        <select name="payment_terms" style="width:100%;padding:9px 12px;border:1.5px solid #dde4f7;border-radius:8px;font-family:inherit;font-size:13px;color:#1a1a2e;background:#fff;outline:none">
+          <option value="immediate">Due Immediately</option>
+          <option value="net15">Net 15 Days</option>
+          <option value="net30">Net 30 Days</option>
+          <option value="net45">Net 45 Days</option>
+          <option value="net60">Net 60 Days</option>
+          <option value="50_advance">50% Advance + 50% on Delivery</option>
+          <option value="100_advance">100% Advance</option>
+        </select>
+      </div>
+      <div class="inv-section" style="padding:16px 18px">
+        <div class="inv-section-title" style="margin-bottom:10px">Internal Notes</div>
+        <textarea name="internal_notes" placeholder="Internal remarks (not shown to client)..." style="width:100%;padding:8px 10px;border:1.5px solid #dde4f7;border-radius:8px;font-family:inherit;font-size:13px;color:#1a1a2e;resize:none;height:76px;outline:none"></textarea>
+      </div>
+    </div>
+  </div>
+
+  <!-- FOOTER ACTIONS -->
+  <div class="inv-footer">
+    <div class="inv-footer-sum">
+      <strong id="f-count">0 items</strong> &nbsp;·&nbsp;
+      Subtotal: <strong id="f-sub">₹0.00</strong> &nbsp;·&nbsp;
+      Grand Total: <strong id="f-grand" style="color:#4f46e5">₹0.00</strong>
+    </div>
+    <div class="inv-footer-actions">
+      <a href="/orders" class="inv-btn inv-btn-ghost">Cancel</a>
+      <button type="submit" name="action" value="draft"  class="inv-btn inv-btn-draft">💾 Save Draft</button>
+      <button type="submit" name="action" value="order"  class="inv-btn inv-btn-place">✓ Place Order</button>
+    </div>
+  </div>
+
+</div><!-- /.invoice-doc -->
+</form>
+</div><!-- /.invoice-wrapper -->
+
+<script>
+function fmtN(n) {
+  return '₹' + Number(n).toLocaleString('en-IN', { minimumFractionDigits:2, maximumFractionDigits:2 });
+}
+
+function calcInvoice() {
+  let sub = 0, count = 0;
+  document.querySelectorAll('#itemsBody tr').forEach((tr, i) => {
+    const qty  = parseFloat(tr.querySelector('[name=qty]')?.value)  || 0;
+    const rate = parseFloat(tr.querySelector('[name=rate]')?.value) || 0;
+    const tot  = qty * rate;
+    sub += tot; count++;
+    const tc = tr.querySelector('.tc');
+    if (tc) tc.value = fmtN(tot);
+    const rn = tr.querySelector('.row-num');
+    if (rn) rn.textContent = i + 1;
+  });
+  const cgst = sub * 0.09, sgst = sub * 0.09, grand = sub + cgst + sgst;
+  document.getElementById('inv-sub').textContent  = fmtN(sub);
+  document.getElementById('inv-cgst').textContent = fmtN(cgst);
+  document.getElementById('inv-sgst').textContent = fmtN(sgst);
+  document.getElementById('inv-grand').textContent = fmtN(grand);
+  document.getElementById('f-count').textContent = count + (count === 1 ? ' item' : ' items');
+  document.getElementById('f-sub').textContent   = fmtN(sub);
+  document.getElementById('f-grand').textContent = fmtN(grand);
+}
+
+function addRow() {
+  const tbody = document.getElementById('itemsBody');
+  const n = tbody.querySelectorAll('tr').length + 1;
+  const tr = document.createElement('tr');
+  tr.innerHTML = `
+    <td class="row-num">${n}</td>
+    <td><input name="particular" placeholder="Item or service description" /></td>
+    <td><input name="hsn" placeholder="HSN code" /></td>
+    <td><input name="qty"  type="number" value="1" min="1" step="1"    oninput="calcInvoice()" /></td>
+    <td><input name="rate" type="number" value="0" min="0" step="0.01" oninput="calcInvoice()" /></td>
+    <td><input class="tc" disabled value="₹0.00" /></td>
+    <td><button type="button" class="del-btn" onclick="removeRow(this)">×</button></td>`;
+  tbody.appendChild(tr);
+  tr.querySelector('[name=particular]').focus();
+}
+
+function removeRow(btn) {
+  if (document.querySelectorAll('#itemsBody tr').length === 1) {
+    alert('An order must have at least one item.');
+    return;
+  }
+  btn.closest('tr').remove();
+  calcInvoice();
+}
+
+calcInvoice();
+</script>
+</body>
+</html>
