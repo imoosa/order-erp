@@ -17,21 +17,9 @@ app.config['PERMANENT_SESSION_LIFETIME'] = timedelta(hours=24)
 CORS(app, supports_credentials=True)
 
 # Database configuration
-# Uses DATABASE_URL env var if set (e.g. on Render), otherwise falls back
-# to local MySQL for VPS/dev. To use a real MySQL on Render instead, set
-# DATABASE_URL to something like:
-#   mysql+pymysql://user:password@your-mysql-host:3306/maktronics_order
-import os
-_db_url = os.environ.get('DATABASE_URL')
-if _db_url:
-    # Render/Heroku-style URLs sometimes use postgres:// - normalize just in case
-    if _db_url.startswith('postgres://'):
-        _db_url = _db_url.replace('postgres://', 'postgresql://', 1)
-    app.config["SQLALCHEMY_DATABASE_URI"] = _db_url
-else:
-    app.config["SQLALCHEMY_DATABASE_URI"] = (
-        'sqlite:///maktronics_order.db'
-    )
+app.config["SQLALCHEMY_DATABASE_URI"] = (
+    'mysql+pymysql://root:@localhost/maktronics_order'
+)
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 app.config['SQLALCHEMY_ENGINE_OPTIONS'] = {
     'pool_size': 10,
