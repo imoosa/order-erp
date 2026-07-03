@@ -30,7 +30,7 @@ if _db_url:
     app.config["SQLALCHEMY_DATABASE_URI"] = _db_url
 else:
     app.config["SQLALCHEMY_DATABASE_URI"] = (
-        'mysql+pymysql://root:@localhost/maktronics_order'
+        'sqlite:///maktronics_order.db'
     )
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 app.config['SQLALCHEMY_ENGINE_OPTIONS'] = {
